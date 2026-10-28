@@ -1,5 +1,11 @@
 # Mudanças
 
+## 1.1.5 (2026-10-28)
+
+- Números sempre inteiros em qualquer tela, do celular pequeno ao monitor largo: nos quadros de resumo a letra diminui para o valor caber, em vez de cortar com reticências. Vale também para o saldo das contas, o total de cada grupo em Vencimentos e os meses do Dinheiro comprometido.
+- Títulos dos quadros quebram linha em vez de cortar.
+- No celular, o botão + some ao rolar para baixo e volta ao rolar para cima, para não tampar valores.
+
 ## 1.1.4 (2026-10-28)
 
 - Lançamentos repetidos somem na hora: ao abrir, o app mostra só uma cópia de cada lançamento e apaga as outras da planilha, sem esperar a atualização com o banco. A próxima atualização com o banco busca de novo os últimos meses para recuperar o que o defeito antigo tinha apagado.

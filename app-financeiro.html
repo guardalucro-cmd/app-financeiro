@@ -83,6 +83,8 @@ p{margin:0}
   #barra button.ativo{color:var(--brand)}
   #fab{display:grid;place-items:center;position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(var(--barra) + 16px + env(safe-area-inset-bottom,0px));width:56px;height:56px;border-radius:999px;background:var(--brand);color:var(--on-brand);box-shadow:0 6px 18px rgba(14,122,85,.35);z-index:31}
   #fab svg{width:26px;height:26px}
+  #fab{transition:transform .2s ease,opacity .2s ease}
+  #fab.escondido{transform:translateY(90px);opacity:0;pointer-events:none}
 }
 /* === 20-kit.css === */
 /* ===== kit de componentes ===== */
@@ -101,12 +103,13 @@ p{margin:0}
 @media (max-width:900px){.grade.c2,.grade.c3,.grade.c23{grid-template-columns:1fr}}
 .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
 @media (max-width:900px){.tiles{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}}
-.tile{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;min-width:0;display:flex;flex-direction:column;gap:4px}
-.tile .rotulo{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.tile .valor{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:22px;font-weight:600;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tile{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;min-width:0;display:flex;flex-direction:column;gap:4px;container-type:inline-size}
+.tile .rotulo{overflow-wrap:anywhere}
+/* o número diminui para caber no quadro, nunca é cortado (UI.caberNumeros confere depois de desenhar) */
+.tile .valor{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:clamp(12px,11.5cqi,22px);font-weight:600;letter-spacing:-.02em;white-space:nowrap;overflow:hidden}
 .tile .delta{font-size:12.5px;color:var(--muted)}
 .tile.pos .valor{color:var(--pos)} .tile.neg .valor{color:var(--neg)} .tile.warn .valor{color:var(--warn)} .tile.danger .valor{color:var(--danger)}
-@media (max-width:900px){.tile .valor{font-size:19px}.tile{padding:12px 13px}}
+@media (max-width:900px){.tile .valor{font-size:clamp(12px,11.5cqi,20px)}.tile{padding:12px 13px}}
 .pilula{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:500;line-height:1.6;white-space:nowrap;background:var(--panel-2);color:var(--muted)}
 .pilula.pos{background:var(--pos-soft);color:var(--pos)} .pilula.neg{background:var(--neg-soft);color:var(--neg)} .pilula.warn{background:var(--warn-soft);color:var(--warn)} .pilula.danger{background:var(--danger-soft);color:var(--danger)} .pilula.info{background:var(--info-soft);color:var(--info)} .pilula.brand{background:var(--brand-soft);color:var(--brand-ink)}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:40px;padding:0 14px;border-radius:9px;font-weight:500;font-size:14px;border:1px solid transparent;white-space:nowrap;user-select:none}
@@ -143,7 +146,7 @@ p{margin:0}
 .item .ic svg{width:18px;height:18px}
 .item .tx{flex:1 1 auto;min-width:0}
 .item .tx b{display:block;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.item .tx small{display:block;color:var(--muted);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item .tx small{display:block;color:var(--muted);font-size:12.5px;overflow-wrap:anywhere}
 .item .vl{font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap;text-align:right}
 .item .vl small{display:block;font-weight:400;color:var(--muted);font-size:11.5px}
 .item.clicavel{cursor:pointer}
@@ -341,7 +344,8 @@ table.tabela{border-collapse:collapse;width:100%;font-size:14px}
 .vc-cal{display:none}
 .vc-filtro{display:flex;align-items:center;gap:10px}
 .vc-grupo{display:flex;flex-direction:column;gap:10px;min-width:0}
-.vc-grupo-tit{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;min-width:0}
+.vc-grupo-tit{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;min-width:0;flex-wrap:wrap}
+.vc-grupo-tit .num{white-space:nowrap}
 .vc-grupo-n{font-size:12.5px;font-weight:400}
 .vc-grupo.danger .vc-grupo-tit{color:var(--danger)}
 .vc-grupo.warn .vc-grupo-tit{color:var(--warn)}
@@ -362,7 +366,7 @@ table.tabela{border-collapse:collapse;width:100%;font-size:14px}
 .vc-topo .ic.warn{background:var(--warn-soft);color:var(--warn)}
 .vc-tx{flex:1 1 auto;min-width:0}
 .vc-tx b{display:block;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.vc-tx small{display:block;color:var(--muted);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vc-tx small{display:block;color:var(--muted);font-size:12.5px;overflow-wrap:anywhere}
 .vc-val{flex:0 0 auto;font-weight:600;white-space:nowrap}
 .vc-marcas{display:flex;flex-wrap:wrap;gap:6px}
 .vc-par{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:8px 10px;border-radius:var(--r-sm);background:var(--warn-soft);font-size:13px}
@@ -401,7 +405,7 @@ table.tabela{border-collapse:collapse;width:100%;font-size:14px}
 .pj-sub{margin:18px 0 8px;font-size:13px;font-weight:600;letter-spacing:.02em;color:var(--muted);text-transform:uppercase}
 .pj-meses{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}
 .pj-mes{display:flex;flex-direction:column;gap:2px;min-width:0;padding:10px 12px;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--panel-2)}
-.pj-mes b{font-size:15px}
+.pj-mes b{font-size:15px;white-space:nowrap;overflow:hidden}
 .pj-mes small{font-size:11.5px;line-height:1.35;overflow-wrap:anywhere}
 .pj-comp .item .tx b,.pj-comp .item .tx small{white-space:normal;overflow:visible}
 .pj-comp .item .vl{flex:0 0 auto;text-align:right}
@@ -439,8 +443,9 @@ table.tabela{border-collapse:collapse;width:100%;font-size:14px}
 .cn-nome{font-weight:600;overflow-wrap:anywhere}
 .cn-sub{color:var(--muted);font-size:12.5px}
 .cn-meta{display:flex;flex-wrap:wrap;gap:5px}
-.cn-saldo{display:flex;flex-direction:column;align-items:flex-end;text-align:right;flex:0 0 auto;max-width:42%}
-.cn-saldo b{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:16px;font-weight:600;overflow-wrap:anywhere}
+.cn-saldo{display:flex;flex-direction:column;align-items:flex-end;text-align:right;flex:0 0 auto}
+.cn-saldo b{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:16px;font-weight:600;white-space:nowrap}
+@media (max-width:380px){.cn-saldo b{font-size:14px}}
 .cn-saldo small{color:var(--muted);font-size:12px}
 .cn-banco{display:flex;flex-direction:column;gap:12px}
 .cn-ajuda{font-size:13px}
@@ -526,7 +531,7 @@ body.ag-ativa #fab{display:none}
 <script>
 /* === 50-core.js === */
 /* ===== 50-core.js: estado global e utilidades puras (sem DOM) ===== */
-var APP_VERSAO = '1.1.4';
+var APP_VERSAO = '1.1.5';
 var S = {
   tela: 'visao', planilhaId: '', carregado: false, exemplo: false, erro: null, ultimaCarga: 0, pausaAte: 0,
   lancamentos: [], contas: [], plano: [], orcamento: [], previstos: [], fixas: [], regras: [], config: [], controle: [],
@@ -2286,6 +2291,14 @@ var ICONES = {
 var _TONS_SVG = 'xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"';
 
 var UI = {
+  /* diminui a letra dos números que não cabem no espaço, até 11px; roda depois de cada desenho e quando a janela muda de tamanho */
+  caberNumeros: function (raiz) {
+    (raiz || document).querySelectorAll('.tile .valor, .pj-mes b').forEach(function (el) {
+      el.style.fontSize = '';
+      var t = parseFloat(getComputedStyle(el).fontSize) || 16, guarda = 0;
+      while (el.scrollWidth > el.clientWidth + 1 && t > 11 && guarda++ < 30) { t -= 1; el.style.fontSize = t + 'px'; }
+    });
+  },
   icone: function (nome) { var p = ICONES[nome] || ICONES.info; return UI.h('<svg ' + _TONS_SVG + '>' + p + '</svg>'); },
   iconeHtml: function (nome) { var p = ICONES[nome] || ICONES.info; return '<svg ' + _TONS_SVG + '>' + p + '</svg>'; },
   h: function (html) { var t = document.createElement('template'); t.innerHTML = String(html).trim(); return t.content.firstElementChild || document.createTextNode(''); },
@@ -5698,6 +5711,7 @@ var App = {
       try { t.render(corpo); } catch (e) { console.error('render ' + S.tela, e); corpo.appendChild(UI.aviso({ tom: 'danger', titulo: 'Esta tela deu erro.', texto: String(e && e.message || e) })); }
       document.title = (t.titulo || 'App Financeiro') + ' · ' + cfg('nome_app', 'App Financeiro');
       $('titulo-topo').textContent = t.titulo || cfg('nome_app', 'App Financeiro');
+      UI.caberNumeros(root);
     });
   },
   renderMenu: function () {
@@ -5746,6 +5760,14 @@ var App = {
   iniciar: async function () {
     $('logo-lado').appendChild(UI.icone('dinheiro')); $('logo-topo').appendChild(UI.icone('dinheiro')); $('fab').appendChild(UI.icone('mais-acao'));
     $('fab').addEventListener('click', App.lancarPorFrase);
+    /* o botão + some ao rolar para baixo (para não tampar valores) e volta ao rolar para cima ou chegar ao topo */
+    var rolY = {}; window.addEventListener('scroll', function (ev) {
+      var el = ev.target === document ? document.scrollingElement : ev.target; if (!el || el.scrollTop == null) return;
+      var k = el.id || 'doc', y = el.scrollTop, ant = rolY[k] || 0; rolY[k] = y;
+      if (Math.abs(y - ant) < 4) return;
+      $('fab').classList.toggle('escondido', y > ant && y > 40);
+    }, true);
+    var tamT; window.addEventListener('resize', function () { clearTimeout(tamT); tamT = setTimeout(function () { UI.caberNumeros($('tela')); }, 120); });
     $('btn-sync-lado').addEventListener('click', function () { App.sincronizar(); }); $('btn-sync-topo').addEventListener('click', function () { App.sincronizar(); });
     window.addEventListener('hashchange', function () { var h = location.hash.replace('#', ''); if (h && Telas[h] && h !== S.tela) App.ir(h); });
     document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape' && !$('folha').hidden) UI.fecharFolha(); });
