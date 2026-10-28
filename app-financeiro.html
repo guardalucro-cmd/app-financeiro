@@ -517,7 +517,7 @@ body.ag-ativa #fab{display:none}
 <script>
 /* === 50-core.js === */
 /* ===== 50-core.js: estado global e utilidades puras (sem DOM) ===== */
-var APP_VERSAO = '1.1.0';
+var APP_VERSAO = '1.1.1';
 var S = {
   tela: 'visao', planilhaId: '', carregado: false, exemplo: false, erro: null, ultimaCarga: 0, pausaAte: 0,
   lancamentos: [], contas: [], plano: [], orcamento: [], previstos: [], fixas: [], regras: [], config: [], controle: [],
@@ -596,6 +596,7 @@ function filtrarCarteira(lista) {
     return cart === c;
   });
 }
+function contaDivida(c) { return !!c && (c.tipo === 'cartao' || c.tipo === 'emprestimo'); }
 function contaManual(c) { return !!c && c.origem !== 'banco'; }
 function contasManuais() { return S.contas.filter(function (c) { return c.ativa !== 'nao' && contaManual(c); }); }
 function linhaParaObj(aba, valores, linha) { var o = { _linha: linha }; var nums = NUMERICAS[aba] || []; COLS[aba].forEach(function (c, i) { var v = valores[i] == null ? '' : valores[i]; o[c] = nums.indexOf(c) >= 0 ? arred(numeroDe(v)) : String(v); }); return o; }
@@ -623,6 +624,7 @@ var Motor = (function () {
     });
   }
   function manual(c) { return !!c && c.origem !== 'banco'; }
+  function ehDivida(c) { return !!c && (c.tipo === 'cartao' || c.tipo === 'emprestimo'); }
   /* parcela de compra no cartão: já está dentro da fatura, é só informação */
   function dentroDaFatura(S, p) { if (p.origem !== 'parcela') return false; var c = contaDe(S, p.conta_id); return !!c && c.tipo === 'cartao'; }
   function ativa(x) { return x.ativa !== 'nao'; }
@@ -703,16 +705,18 @@ var Motor = (function () {
     /* saldos atuais: por conta, total das contas de dinheiro (sem cartão) e por carteira */
     saldos: function (S, hojeISO) {
       hojeISO = hojeISO || hoje();
-      var porConta = [], tot = 0, cartoes = 0, porCarteira = { PF: 0, PJ: 0 };
+      var porConta = [], tot = 0, cartoes = 0, emprestimos = 0, porCarteira = { PF: 0, PJ: 0 };
       filtrar(S, S.contas || []).filter(ativa).forEach(function (c) {
         var s = saldoConta(S, c, hojeISO);
-        porConta.push({ conta: c, saldo: s.saldo, saldo_em: s.saldo_em });
-        if (c.tipo === 'cartao') { cartoes = arred(cartoes + s.saldo); return; }
+        porConta.push({ conta: c, saldo: s.saldo, saldo_em: s.saldo_em, divida: ehDivida(c) });
+        /* cartão e empréstimo são dívida: valor devido (positivo), fora do saldo de dinheiro */
+        if (c.tipo === 'cartao') { cartoes = arred(cartoes + Math.abs(s.saldo)); return; }
+        if (c.tipo === 'emprestimo') { emprestimos = arred(emprestimos + Math.abs(s.saldo)); return; }
         tot = arred(tot + s.saldo);
         var k = c.carteira === 'PJ' ? 'PJ' : 'PF';
         porCarteira[k] = arred(porCarteira[k] + s.saldo);
       });
-      return { porConta: porConta, total: tot, cartoes: cartoes, porCarteira: porCarteira };
+      return { porConta: porConta, total: tot, cartoes: cartoes, emprestimos: emprestimos, dividas: arred(cartoes + emprestimos), porCarteira: porCarteira };
     },
 
     /* resumo de um mês AAAA-MM: só Receita e Despesa entram em entrou/saiu */
@@ -1236,12 +1240,14 @@ var Classificar = (function () {
       };
     },
 
-    /* conta da Belvo -> linha da aba Contas (null para empréstimo com saldo zero) */
+    /* conta da Belvo -> linha da aba Contas (null para empréstimo com saldo zero).
+       Cartão e empréstimo são dívida: o saldo guardado é o valor devido, sempre positivo, e nunca entra no saldo de dinheiro. */
     contaDaBelvo: function (acc) {
       acc = acc || {};
       var cat = s(acc.category).toUpperCase();
-      var tipo = cat === 'CHECKING_ACCOUNT' ? 'corrente' : cat === 'CREDIT_CARD' ? 'cartao' : cat === 'SAVINGS_ACCOUNT' ? 'poupanca' : 'outra';
+      var tipo = cat === 'CHECKING_ACCOUNT' ? 'corrente' : cat === 'CREDIT_CARD' ? 'cartao' : cat === 'SAVINGS_ACCOUNT' ? 'poupanca' : cat === 'LOAN_ACCOUNT' ? 'emprestimo' : 'outra';
       var saldo = arred(acc.balance && acc.balance.current != null ? +acc.balance.current : 0);
+      if (tipo === 'cartao' || tipo === 'emprestimo') saldo = Math.abs(saldo);
       if (cat === 'LOAN_ACCOUNT' && saldo === 0) return null;
       var inst = fold(acc.institution && acc.institution.name);
       var business = /business|pj/.test(inst);
@@ -1250,7 +1256,7 @@ var Classificar = (function () {
       else if ((mi = inst.match(/^of([a-z0-9]+?)_br/))) banco = capitalizar(mi[1]);
       else if (acc.institution && acc.institution.display_name) banco = s(acc.institution.display_name);
       else banco = capitalizar(inst.split('_')[0]) || 'Banco';
-      var sufixo = tipo === 'corrente' ? 'conta' : tipo === 'cartao' ? 'cartão' : tipo === 'poupanca' ? 'poupança' : 'outra';
+      var sufixo = tipo === 'corrente' ? 'conta' : tipo === 'cartao' ? 'cartão' : tipo === 'poupanca' ? 'poupança' : tipo === 'emprestimo' ? 'empréstimo' : 'outra';
       var cards = acc.credit_data && acc.credit_data.cards ? acc.credit_data.cards : [];
       var fin = final4(acc.number);
       if (fin.length < 4 && cards.length) fin = final4(cards[0].identification_number);
@@ -1610,7 +1616,7 @@ var Belvo = {
       itens.forEach(function (acc) {
         var nova = Classificar.contaDaBelvo(acc); if (!nova) return;
         var ex = S.contas.filter(function (k) { return k.belvo_account_id === acc.account_id; })[0];
-        if (ex) { ex.saldo = nova.saldo; ex.saldo_em = nova.saldo_em; if (!ex.final) ex.final = nova.final; if (!ex.dia_fechamento) ex.dia_fechamento = nova.dia_fechamento; alteradas.push(ex); }
+        if (ex) { if (ex.tipo === 'outra' && nova.tipo === 'emprestimo') { ex.tipo = 'emprestimo'; if (/ outra$/.test(ex.nome)) ex.nome = ex.nome.replace(/ outra$/, ' empréstimo'); } ex.saldo = nova.saldo; ex.saldo_em = nova.saldo_em; if (!ex.final) ex.final = nova.final; if (!ex.dia_fechamento) ex.dia_fechamento = nova.dia_fechamento; alteradas.push(ex); }
         else { nova.id = novoId('C'); S.contas.push(nova); novasContas.push(nova); }
       });
     });
@@ -2382,11 +2388,13 @@ var Agente = {
     var ls = [];
     (saldos.porConta || []).slice(0, 12).forEach(function (pc) {
       var ct = pc.conta || {};
-      ls.push((ct.nome || 'Conta') + ' (' + (ct.tipo || 'conta') + ', ' + (ct.carteira || '') + '): ' + fmtMoeda(pc.saldo) + (pc.saldo_em ? ' em ' + dm(pc.saldo_em) : ''));
+      var divida = ct.tipo === 'cartao' || ct.tipo === 'emprestimo';
+      ls.push((ct.nome || 'Conta') + ' (' + (ct.tipo || 'conta') + ', ' + (ct.carteira || '') + '): ' + (divida ? 'DÍVIDA de ' + fmtMoeda(Math.abs(pc.saldo)) + (ct.tipo === 'cartao' ? ' usada no cartão' : ' a pagar') : fmtMoeda(pc.saldo)) + (pc.saldo_em ? ' em ' + dm(pc.saldo_em) : ''));
     });
     if (!ls.length) ls.push('Nenhuma conta cadastrada.');
     var pcart = saldos.porCarteira || {};
-    ls.push('Total: ' + fmtMoeda(saldos.total) + '. PF: ' + fmtMoeda(pcart.PF) + '. PJ: ' + fmtMoeda(pcart.PJ) + '.');
+    ls.push('Dinheiro nas contas (sem cartões e empréstimos): ' + fmtMoeda(saldos.total) + '. PF: ' + fmtMoeda(pcart.PF) + '. PJ: ' + fmtMoeda(pcart.PJ) + '.');
+    if (saldos.dividas) ls.push('Dívidas (não são dinheiro): cartões ' + fmtMoeda(saldos.cartoes) + ', empréstimos ' + fmtMoeda(saldos.emprestimos) + '.');
     secao('SALDOS', ls, 0);
 
     // MÊS (fixa)
@@ -3101,7 +3109,7 @@ var Telas = typeof Telas !== 'undefined' ? Telas : {};
       var pode = typeof Motor.podeGastarPorDia === 'function' ? tentar('podeGastar', function () { return Motor.podeGastarPorDia(S, mes, hj); }) : null;
 
       var tiles = [];
-      tiles.push({ rotulo: 'Saldo das contas', valor: saldos ? fmtMoeda(saldos.total) : '-', tom: saldos && saldos.total < 0 ? 'neg' : 'neutro', delta: 'Sem contar cartões' });
+      tiles.push({ rotulo: 'Saldo das contas', valor: saldos ? fmtMoeda(saldos.total) : '-', tom: saldos && saldos.total < 0 ? 'neg' : 'neutro', delta: saldos && saldos.dividas ? 'Cartões e empréstimos à parte: ' + fmtMoeda(saldos.dividas) + ' devidos' : 'Sem contar cartões e empréstimos' });
       if (resumo) {
         tiles.push({ rotulo: 'Entrou no mês', valor: fmtMoeda(resumo.entrou), tom: 'pos', delta: 'Mês passado: ' + fmtMoeda(resumo.anterior.entrou) });
         tiles.push({ rotulo: 'Saiu no mês', valor: fmtMoeda(resumo.saiu), tom: 'neutro', delta: 'Mês passado: ' + fmtMoeda(resumo.anterior.saiu) });
@@ -3739,7 +3747,7 @@ var Telas = typeof Telas !== 'undefined' ? Telas : {};
       { rotulo: 'Entradas', valor: fmtMoeda(fluxo.totalEntradas), tom: 'pos', delta: fmtData(iv.inicio).slice(0, 5) + ' a ' + fmtData(iv.fim).slice(0, 5) },
       { rotulo: 'Saídas', valor: fmtMoeda(fluxo.totalSaidas), tom: 'neg', delta: 'sem faturas e transferências' },
       { rotulo: 'Resultado', valor: fmtMoeda(resultado), tom: resultado >= 0 ? 'pos' : 'neg', delta: resultado >= 0 ? 'sobrou no período' : 'faltou no período' },
-      { rotulo: 'Saldo hoje', valor: fmtMoeda(saldos.total), tom: saldos.total < 0 ? 'neg' : 'neutro', delta: 'contas de dinheiro' }
+      { rotulo: 'Saldo hoje', valor: fmtMoeda(saldos.total), tom: saldos.total < 0 ? 'neg' : 'neutro', delta: 'sem cartões e empréstimos' }
     ]));
 
     if (!fluxo.totalEntradas && !fluxo.totalSaidas) {
@@ -4739,8 +4747,8 @@ var Telas = typeof Telas !== 'undefined' ? Telas : {};
   var linkBelvo = '';
 
   function avisoExemplo() { if (S.exemplo) UI.toast('Modo de exemplo: a alteração não é gravada na planilha.', 'warn'); }
-  function iconeDe(tipo) { return tipo === 'cartao' ? 'cartao' : (tipo === 'dinheiro' ? 'dinheiro' : 'banco'); }
-  function rotuloTipo(t) { return { corrente: 'Conta corrente', cartao: 'Cartão de crédito', poupanca: 'Poupança', dinheiro: 'Dinheiro', outra: 'Outra' }[t] || t; }
+  function iconeDe(tipo) { return tipo === 'cartao' ? 'cartao' : (tipo === 'dinheiro' ? 'dinheiro' : (tipo === 'emprestimo' ? 'alerta' : 'banco')); }
+  function rotuloTipo(t) { return { corrente: 'Conta corrente', cartao: 'Cartão de crédito', poupanca: 'Poupança', dinheiro: 'Dinheiro', emprestimo: 'Empréstimo', outra: 'Outra' }[t] || t; }
   function so4(v) { return String(v || '').replace(/\D/g, '').slice(-4); }
 
   /* fatura aberta do cartão: soma das compras na menor fatura_mes a partir do mês atual */
@@ -4763,12 +4771,12 @@ var Telas = typeof Telas !== 'undefined' ? Telas : {};
     var corpo = [
       UI.campo({ rotulo: 'Nome', tipo: 'texto', id: 'cn-nome', valor: base.nome, placeholder: 'Ex.: Carteira, Cofrinho' }),
       UI.el('div', { class: 'campos' },
-        UI.campo({ rotulo: 'Tipo', tipo: 'select', id: 'cn-tipo', valor: base.tipo, opcoes: [{ valor: 'corrente', texto: 'Conta corrente' }, { valor: 'cartao', texto: 'Cartão de crédito' }, { valor: 'poupanca', texto: 'Poupança' }, { valor: 'dinheiro', texto: 'Dinheiro' }, { valor: 'outra', texto: 'Outra' }] }),
+        UI.campo({ rotulo: 'Tipo', tipo: 'select', id: 'cn-tipo', valor: base.tipo, opcoes: [{ valor: 'corrente', texto: 'Conta corrente' }, { valor: 'cartao', texto: 'Cartão de crédito' }, { valor: 'poupanca', texto: 'Poupança' }, { valor: 'dinheiro', texto: 'Dinheiro' }, { valor: 'emprestimo', texto: 'Empréstimo (dívida)' }, { valor: 'outra', texto: 'Outra' }] }),
         UI.campo({ rotulo: 'Carteira', tipo: 'select', id: 'cn-cart', valor: base.carteira === 'PJ' ? 'PJ' : 'PF', opcoes: [{ valor: 'PF', texto: 'Pessoal' }, { valor: 'PJ', texto: 'Empresa' }] })),
       UI.el('div', { class: 'campos' },
         UI.campo({ rotulo: 'Dia de fechamento', tipo: 'numero', id: 'cn-fecha', valor: base.dia_fechamento, ajuda: 'Só para cartão' }),
         UI.campo({ rotulo: 'Dia de vencimento', tipo: 'numero', id: 'cn-venc', valor: base.dia_vencimento, ajuda: 'Só para cartão' })),
-      manual ? UI.campo({ rotulo: 'Saldo inicial (R$)', tipo: 'moeda', id: 'cn-saldo', valor: base.saldo || '', ajuda: 'Valor de partida. Os lançamentos manuais desta conta somam a partir dele.' }) : UI.el('p', { class: 'muted cn-ajuda', text: 'O saldo e os lançamentos desta conta vêm do banco, a cada atualização. Lançamentos manuais vão para as contas manuais.' }),
+      manual ? UI.campo({ rotulo: 'Saldo inicial (R$)', tipo: 'moeda', id: 'cn-saldo', valor: base.saldo || '', ajuda: 'Valor de partida. Os lançamentos manuais desta conta somam a partir dele. Em cartão e empréstimo, é o valor devido.' }) : UI.el('p', { class: 'muted cn-ajuda', text: 'O saldo e os lançamentos desta conta vêm do banco, a cada atualização. Lançamentos manuais vão para as contas manuais.' }),
       manual ? UI.campo({ rotulo: 'Final (4 dígitos, opcional)', tipo: 'texto', id: 'cn-final', valor: base.final, ajuda: 'Só os 4 últimos dígitos, para você reconhecer a conta.' }) : null,
       UI.campo({ rotulo: 'Situação', tipo: 'select', id: 'cn-ativa', valor: base.ativa === 'nao' ? 'nao' : 'sim', opcoes: [{ valor: 'sim', texto: 'Ativa' }, { valor: 'nao', texto: 'Desativada (some dos saldos)' }] })
     ];
@@ -4802,7 +4810,7 @@ var Telas = typeof Telas !== 'undefined' ? Telas : {};
   function cartaoConta(c, saldoInfo) {
     var saldo = saldoInfo ? saldoInfo.saldo : (+c.saldo || 0);
     var saldoEm = saldoInfo ? saldoInfo.saldo_em : c.saldo_em;
-    var ehCartao = c.tipo === 'cartao';
+    var ehCartao = c.tipo === 'cartao', divida = contaDivida(c);
     var meta = UI.el('div', { class: 'cn-meta' },
       UI.pilula(UI.carteiraTexto(c.carteira), c.carteira === 'PJ' ? 'info' : 'brand'),
       UI.pilula(c.origem === 'banco' ? 'Banco' : 'Manual', ''),
@@ -4820,8 +4828,8 @@ var Telas = typeof Telas !== 'undefined' ? Telas : {};
         meta,
         fat ? UI.el('small', { class: 'cn-sub', text: 'Fatura aberta (' + fmtMesCurto(fat.mes) + '): ' + fmtMoeda(fat.valor) }) : null),
       UI.el('div', { class: 'cn-saldo' },
-        UI.el('b', { class: 'num ' + (saldo < 0 ? 'neg' : ''), text: fmtMoeda(saldo) }),
-        UI.el('small', { text: saldoEm ? (ehCartao ? 'saldo em ' : 'saldo em ') + fmtDataRelativa(saldoEm) : 'sem data' })));
+        UI.el('b', { class: 'num ' + (divida || saldo < 0 ? 'neg' : ''), text: (divida ? '- ' : '') + fmtMoeda(Math.abs(saldo)) }),
+        UI.el('small', { text: (divida ? (ehCartao ? 'usado no cartão' : 'a pagar') : 'saldo') + (saldoEm ? ' em ' + fmtDataRelativa(saldoEm) : '') })));
   }
 
   /* ---------- seção do banco ---------- */
@@ -4907,7 +4915,7 @@ var Telas = typeof Telas !== 'undefined' ? Telas : {};
       if (!lista.length) {
         root.appendChild(UI.vazio({ icone: 'contas', titulo: S.contas.length ? 'Nenhuma conta neste filtro' : 'Nenhuma conta ainda', texto: S.contas.length ? 'Troque o filtro de carteira ou de conta para ver as outras.' : 'Conecte seu banco ou crie uma conta manual para começar.', acao: UI.botao('Criar conta manual', { tom: 'primario', icone: 'mais-acao', onclick: function () { abrirConta(null); } }) }));
       } else {
-        var ordem = { corrente: 0, poupanca: 1, dinheiro: 2, outra: 3, cartao: 4 };
+        var ordem = { corrente: 0, poupanca: 1, dinheiro: 2, outra: 3, cartao: 4, emprestimo: 5 };
         lista = lista.slice().sort(function (a, b) { return (a.ativa === 'nao') - (b.ativa === 'nao') || (ordem[a.tipo] || 0) - (ordem[b.tipo] || 0) || String(a.nome).localeCompare(String(b.nome)); });
         root.appendChild(UI.el('div', { class: 'cn-grade' }, lista.map(function (c) { return cartaoConta(c, mapa[c.id]); })));
       }

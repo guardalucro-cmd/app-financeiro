@@ -1,5 +1,11 @@
 # Mudanças
 
+## 1.1.1 (2026-10-28)
+
+- Saldo corrigido: empréstimos do banco (como capital de giro) eram somados como dinheiro. Agora viram o tipo Empréstimo e aparecem como dívida, fora do saldo.
+- Cartões aparecem como valor usado, em vermelho, nunca como dinheiro disponível.
+- Na próxima atualização com o banco, contas de empréstimo já existentes são convertidas sozinhas.
+
 ## 1.1.0 (2026-10-28)
 
 - Filtro por conta ou banco ao lado do filtro Pessoal/Empresa, em todas as telas de números. Quem só tem contas de um tipo não vê mais o filtro Pessoal/Empresa.
