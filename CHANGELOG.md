@@ -2,6 +2,8 @@
 
 ## 1.1.5 (2026-10-28)
 
+- Prompt de instalação: a aba Resumo da planilha mostrava 0 em Entrou e Saiu. O mês agora fica numa célula própria (B2) e a soma funciona.
+
 - Números sempre inteiros em qualquer tela, do celular pequeno ao monitor largo: nos quadros de resumo a letra diminui para o valor caber, em vez de cortar com reticências. Vale também para o saldo das contas, o total de cada grupo em Vencimentos e os meses do Dinheiro comprometido.
 - Títulos dos quadros quebram linha em vez de cortar.
 - No celular, o botão + some ao rolar para baixo e volta ao rolar para cima, para não tampar valores.
