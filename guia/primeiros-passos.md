@@ -24,7 +24,13 @@ Na tela **Lançamentos**, ligue o filtro **só a classificar**. Abra cada item, 
 
 Em **Projeção**, toque em **Gerar previstos das fixas** depois de cadastrar as contas que se repetem todo mês (aluguel, internet, salário). É isso que alimenta a projeção e os vencimentos.
 
-## 5. Converse com o agente
+## 5. Veja o dinheiro comprometido
+
+Em **Projeção**, o quadro **Dinheiro comprometido** junta o que já está prometido: cartões, compras parceladas, empréstimos e financiamentos, mês a mês. A projeção do saldo só conta o que sai da conta corrente: compra no cartão entra na fatura, e a fatura sai no dia do vencimento. Enquanto o banco não fecha a fatura, o app mostra uma fatura estimada.
+
+Cores: saída e saldo negativo em vermelho, zero em amarelo, entrada e saldo positivo em verde.
+
+## 6. Converse com o agente
 
 Na tela **Agente financeiro**, permita "perguntar ao Claude" e use as perguntas prontas ou escreva a sua. Ele responde com base nos seus números e pode propor um previsto, que você grava com um toque.
 
@@ -36,5 +42,6 @@ Abra o mesmo link no app do Claude. A barra de baixo tem Visão, Fluxo, Projeç�
 
 - "Falta ligar sua planilha": abra Configurações e cole o link da planilha "App Financeiro, banco de dados".
 - "O Google pediu uma pausa": foram muitos pedidos em pouco tempo; espere um minuto, o app tenta sozinho.
-- "A Belvo não está conectada": conecte a Belvo no Claude Desktop e reabra o app.
+- "A Belvo não está conectada": no Claude, Configurações → Conectores, adicione o conector personalizado Belvo com o endereço https://panorama-mcp.belvo.com/mcp e reabra o app. Para incluir outro banco, autorize em https://panorama.belvo.com/connect.
+- "A Belvo disse que acabou a cota do mês": é o limite da conta grátis. Até o mês virar, anote os lançamentos no botão +.
 - Qualquer outra coisa: Configurações → **Conferir estrutura da planilha** e depois **Recarregar da planilha**.

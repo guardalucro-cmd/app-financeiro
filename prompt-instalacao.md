@@ -1,7 +1,13 @@
 # Prompt: instale o App Financeiro no Claude
 
-**Como usar:** no app Claude Desktop, abra **Artefatos → Painel → Chat**. Ali, conecte o **Google Sheets** (obrigatório) e a **Belvo** (opcional, para puxar os lançamentos do banco; é o conector Open Finance gratuito da Belvo, adicionado como conector personalizado com o endereço que a própria Belvo fornece). Depois copie TODO o texto do bloco abaixo, cole nesse mesmo Chat e envie. Não precisa baixar nem anexar nada: o Claude busca o app pronto no GitHub, cria a sua planilha e publica o app no seu painel.
+**Como usar:** o passo a passo com prints e botões de copiar está no guia de instalação. Em resumo, antes de colar o prompt:
 
+1. Autorize o seu banco na Belvo em https://panorama.belvo.com/connect (conta grátis, até 6 bancos).
+2. No Claude, em Configurações → Conectores, adicione um conector personalizado chamado **Belvo** com o endereço `https://panorama-mcp.belvo.com/mcp` e faça o login da Belvo.
+3. Ainda em Conectores, ligue **Google Drive** e **Google Sheets** com a sua conta Google.
+4. Em Configurações → Recursos, ligue **Execução de código e criação de arquivos**, com acesso à internet liberado (o Claude baixa o app do GitHub).
+
+Depois copie TODO o texto do bloco abaixo, cole no Chat do painel de Artefatos (Claude Desktop → Artefatos → Painel → Chat) e envie. Não precisa baixar nem anexar nada: o Claude busca o app pronto no GitHub, cria a sua planilha e publica o app.
 ---
 
 ```

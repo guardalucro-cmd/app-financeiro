@@ -4,8 +4,10 @@ Controle financeiro pessoal e da empresa que funciona dentro do Claude, no compu
 
 ## Como instalar
 
-1. No app Claude Desktop, conecte o **Google Sheets** (obrigatório) e a **Belvo** (opcional, para puxar o banco) em Artefatos → Painel → Chat.
-2. Copie o bloco de texto de [prompt-instalacao.md](prompt-instalacao.md), cole nesse mesmo Chat do painel de Artefatos e envie.
+1. Autorize o seu banco na Belvo em https://panorama.belvo.com/connect (conta grátis, até 6 bancos).
+2. No Claude, em Configurações → Conectores: adicione o conector personalizado **Belvo** (`https://panorama-mcp.belvo.com/mcp`) e ligue **Google Drive** e **Google Sheets**.
+3. Em Configurações → Recursos, ligue **Execução de código e criação de arquivos** com acesso à internet.
+4. Copie o bloco de [prompt-instalacao.md](prompt-instalacao.md), cole no Chat do painel de Artefatos (Claude Desktop → Artefatos → Painel → Chat) e envie.
 
 O Claude cria a planilha, baixa o app deste repositório e publica no seu painel de Artefatos. Nada é digitado à mão.
 
