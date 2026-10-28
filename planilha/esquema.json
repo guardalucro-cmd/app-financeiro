@@ -1,0 +1,678 @@
+{
+  "nome": "App Financeiro, banco de dados",
+  "locale": "pt_BR",
+  "timeZone": "America/Sao_Paulo",
+  "abas": [
+    {
+      "sheetId": 1,
+      "titulo": "Lancamentos",
+      "colunas": [
+        "id",
+        "data",
+        "descricao",
+        "valor",
+        "tipo",
+        "conta_id",
+        "categoria_codigo",
+        "natureza",
+        "origem",
+        "revisado",
+        "observacao",
+        "parcela",
+        "fatura_mes",
+        "carteira",
+        "atualizado_em"
+      ],
+      "textoNasColunas": [
+        0,
+        1,
+        2,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14
+      ],
+      "numericas": [
+        3
+      ]
+    },
+    {
+      "sheetId": 2,
+      "titulo": "Contas",
+      "colunas": [
+        "id",
+        "nome",
+        "tipo",
+        "origem",
+        "belvo_account_id",
+        "final",
+        "dia_fechamento",
+        "dia_vencimento",
+        "carteira",
+        "saldo",
+        "saldo_em",
+        "ativa"
+      ],
+      "textoNasColunas": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        10,
+        11
+      ],
+      "numericas": [
+        9
+      ]
+    },
+    {
+      "sheetId": 3,
+      "titulo": "PlanoDeContas",
+      "colunas": [
+        "codigo",
+        "nome",
+        "grupo",
+        "natureza_padrao",
+        "conta_nos_totais",
+        "ordem"
+      ],
+      "textoNasColunas": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "numericas": []
+    },
+    {
+      "sheetId": 4,
+      "titulo": "Orcamento",
+      "colunas": [
+        "mes",
+        "categoria_codigo",
+        "valor"
+      ],
+      "textoNasColunas": [
+        0,
+        1
+      ],
+      "numericas": [
+        2
+      ]
+    },
+    {
+      "sheetId": 5,
+      "titulo": "Previstos",
+      "colunas": [
+        "id",
+        "data",
+        "descricao",
+        "valor",
+        "tipo",
+        "conta_id",
+        "categoria_codigo",
+        "origem",
+        "status",
+        "lancamento_id",
+        "recorrencia_id",
+        "atualizado_em"
+      ],
+      "textoNasColunas": [
+        0,
+        1,
+        2,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11
+      ],
+      "numericas": [
+        3
+      ]
+    },
+    {
+      "sheetId": 6,
+      "titulo": "Fixas",
+      "colunas": [
+        "id",
+        "nome",
+        "dia",
+        "valor",
+        "tipo",
+        "conta_id",
+        "categoria_codigo",
+        "carteira",
+        "ativa",
+        "termina_em"
+      ],
+      "textoNasColunas": [
+        0,
+        1,
+        2,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "numericas": [
+        3
+      ]
+    },
+    {
+      "sheetId": 7,
+      "titulo": "Regras",
+      "colunas": [
+        "contem",
+        "categoria_codigo",
+        "natureza",
+        "criada_em"
+      ],
+      "textoNasColunas": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "numericas": []
+    },
+    {
+      "sheetId": 8,
+      "titulo": "Config",
+      "colunas": [
+        "campo",
+        "valor",
+        "descricao"
+      ],
+      "textoNasColunas": [
+        0,
+        1,
+        2
+      ],
+      "numericas": []
+    },
+    {
+      "sheetId": 9,
+      "titulo": "Controle",
+      "colunas": [
+        "campo",
+        "valor"
+      ],
+      "textoNasColunas": [
+        0,
+        1
+      ],
+      "numericas": []
+    },
+    {
+      "sheetId": 10,
+      "titulo": "Resumo"
+    }
+  ],
+  "seeds": {
+    "PlanoDeContas": [
+      [
+        "codigo",
+        "nome",
+        "grupo",
+        "natureza_padrao",
+        "conta_nos_totais",
+        "ordem"
+      ],
+      [
+        "1",
+        "Receitas",
+        "Receitas",
+        "Receita",
+        "sim",
+        "1"
+      ],
+      [
+        "1.01",
+        "Salário",
+        "Receitas",
+        "Receita",
+        "sim",
+        "2"
+      ],
+      [
+        "1.02",
+        "Pró-labore e distribuição",
+        "Receitas",
+        "Receita",
+        "sim",
+        "3"
+      ],
+      [
+        "1.03",
+        "Serviços e freelas",
+        "Receitas",
+        "Receita",
+        "sim",
+        "4"
+      ],
+      [
+        "1.04",
+        "Vendas",
+        "Receitas",
+        "Receita",
+        "sim",
+        "5"
+      ],
+      [
+        "1.05",
+        "Rendimentos",
+        "Receitas",
+        "Receita",
+        "sim",
+        "6"
+      ],
+      [
+        "1.06",
+        "Reembolsos",
+        "Receitas",
+        "Receita",
+        "sim",
+        "7"
+      ],
+      [
+        "1.99",
+        "Outras receitas",
+        "Receitas",
+        "Receita",
+        "sim",
+        "8"
+      ],
+      [
+        "2",
+        "Essenciais",
+        "Essenciais",
+        "Despesa",
+        "sim",
+        "9"
+      ],
+      [
+        "2.01",
+        "Moradia (aluguel, condomínio, IPTU)",
+        "Essenciais",
+        "Despesa",
+        "sim",
+        "10"
+      ],
+      [
+        "2.02",
+        "Contas da casa (luz, água, gás, internet, celular)",
+        "Essenciais",
+        "Despesa",
+        "sim",
+        "11"
+      ],
+      [
+        "2.03",
+        "Mercado",
+        "Essenciais",
+        "Despesa",
+        "sim",
+        "12"
+      ],
+      [
+        "2.04",
+        "Transporte",
+        "Essenciais",
+        "Despesa",
+        "sim",
+        "13"
+      ],
+      [
+        "2.05",
+        "Saúde",
+        "Essenciais",
+        "Despesa",
+        "sim",
+        "14"
+      ],
+      [
+        "2.06",
+        "Educação",
+        "Essenciais",
+        "Despesa",
+        "sim",
+        "15"
+      ],
+      [
+        "2.07",
+        "Seguros",
+        "Essenciais",
+        "Despesa",
+        "sim",
+        "16"
+      ],
+      [
+        "2.08",
+        "Impostos e taxas",
+        "Essenciais",
+        "Despesa",
+        "sim",
+        "17"
+      ],
+      [
+        "2.09",
+        "Filhos e dependentes",
+        "Essenciais",
+        "Despesa",
+        "sim",
+        "18"
+      ],
+      [
+        "3",
+        "Estilo de vida",
+        "Estilo de vida",
+        "Despesa",
+        "sim",
+        "19"
+      ],
+      [
+        "3.01",
+        "Restaurantes e delivery",
+        "Estilo de vida",
+        "Despesa",
+        "sim",
+        "20"
+      ],
+      [
+        "3.02",
+        "Lazer",
+        "Estilo de vida",
+        "Despesa",
+        "sim",
+        "21"
+      ],
+      [
+        "3.03",
+        "Assinaturas e streaming",
+        "Estilo de vida",
+        "Despesa",
+        "sim",
+        "22"
+      ],
+      [
+        "3.04",
+        "Compras",
+        "Estilo de vida",
+        "Despesa",
+        "sim",
+        "23"
+      ],
+      [
+        "3.05",
+        "Viagens",
+        "Estilo de vida",
+        "Despesa",
+        "sim",
+        "24"
+      ],
+      [
+        "3.06",
+        "Cuidados pessoais",
+        "Estilo de vida",
+        "Despesa",
+        "sim",
+        "25"
+      ],
+      [
+        "3.07",
+        "Presentes e doações",
+        "Estilo de vida",
+        "Despesa",
+        "sim",
+        "26"
+      ],
+      [
+        "3.08",
+        "Pets",
+        "Estilo de vida",
+        "Despesa",
+        "sim",
+        "27"
+      ],
+      [
+        "4",
+        "Financeiro",
+        "Financeiro",
+        "Despesa",
+        "sim",
+        "28"
+      ],
+      [
+        "4.01",
+        "Tarifas bancárias",
+        "Financeiro",
+        "Despesa",
+        "sim",
+        "29"
+      ],
+      [
+        "4.02",
+        "Juros e multas",
+        "Financeiro",
+        "Despesa",
+        "sim",
+        "30"
+      ],
+      [
+        "4.03",
+        "Parcelas de empréstimo",
+        "Financeiro",
+        "Despesa",
+        "sim",
+        "31"
+      ],
+      [
+        "5",
+        "Investimentos",
+        "Investimentos",
+        "Investimento",
+        "nao",
+        "32"
+      ],
+      [
+        "5.01",
+        "Aplicações",
+        "Investimentos",
+        "Investimento",
+        "nao",
+        "33"
+      ],
+      [
+        "5.02",
+        "Resgates",
+        "Investimentos",
+        "Investimento",
+        "nao",
+        "34"
+      ],
+      [
+        "6",
+        "Movimentações internas",
+        "Movimentações internas",
+        "",
+        "nao",
+        "35"
+      ],
+      [
+        "6.01",
+        "Pagamento de fatura",
+        "Movimentações internas",
+        "Fatura",
+        "nao",
+        "36"
+      ],
+      [
+        "6.02",
+        "Transferência própria",
+        "Movimentações internas",
+        "Transferência própria",
+        "nao",
+        "37"
+      ],
+      [
+        "6.03",
+        "Estorno",
+        "Movimentações internas",
+        "Estorno",
+        "nao",
+        "38"
+      ],
+      [
+        "9",
+        "A classificar",
+        "A classificar",
+        "Despesa",
+        "sim",
+        "39"
+      ]
+    ],
+    "Config": [
+      [
+        "campo",
+        "valor",
+        "descricao"
+      ],
+      [
+        "nome_app",
+        "App Financeiro",
+        "Nome mostrado no app"
+      ],
+      [
+        "carteira_padrao",
+        "PF",
+        "Carteira usada quando o lançamento não diz outra"
+      ],
+      [
+        "dias_projecao",
+        "30",
+        "Quantos dias a projeção mostra por padrão"
+      ],
+      [
+        "aviso_dias",
+        "3",
+        "Dias de antecedência para avisar um vencimento"
+      ],
+      [
+        "sync_dias",
+        "7",
+        "Intervalo sugerido para sincronizar com o banco"
+      ],
+      [
+        "meses_primeira_carga",
+        "3",
+        "Meses trazidos na primeira sincronização com o banco"
+      ],
+      [
+        "tema",
+        "auto",
+        "Tema da tela: auto, claro ou escuro"
+      ],
+      [
+        "moeda",
+        "BRL",
+        "Moeda usada nos valores"
+      ],
+      [
+        "versao_planilha",
+        "1",
+        "Versão do esquema da planilha"
+      ]
+    ],
+    "Controle": [
+      [
+        "campo",
+        "valor"
+      ],
+      [
+        "ultima_sync",
+        ""
+      ],
+      [
+        "ultima_data_banco",
+        ""
+      ],
+      [
+        "linhas_importadas",
+        "0"
+      ],
+      [
+        "consultas_belvo_mes",
+        ""
+      ],
+      [
+        "titular",
+        ""
+      ],
+      [
+        "sync_cursor",
+        ""
+      ],
+      [
+        "versao_app",
+        ""
+      ]
+    ]
+  },
+  "resumo": {
+    "celulas": [
+      {
+        "ref": "Resumo!A1",
+        "valor": "Mês (AAAA-MM)"
+      },
+      {
+        "ref": "Resumo!B1",
+        "valor": ""
+      },
+      {
+        "ref": "Resumo!A3",
+        "valor": "Entrou"
+      },
+      {
+        "ref": "Resumo!B3",
+        "formula": "=SUMPRODUCT((Lancamentos!H2:H=\"Receita\")*(LEFT(Lancamentos!B2:B;7)=IF(B1=\"\";TEXT(TODAY();\"yyyy-mm\");B1))*Lancamentos!D2:D)"
+      },
+      {
+        "ref": "Resumo!A4",
+        "valor": "Saiu"
+      },
+      {
+        "ref": "Resumo!B4",
+        "formula": "=SUMPRODUCT((Lancamentos!H2:H=\"Despesa\")*(LEFT(Lancamentos!B2:B;7)=IF(B1=\"\";TEXT(TODAY();\"yyyy-mm\");B1))*Lancamentos!D2:D)"
+      },
+      {
+        "ref": "Resumo!A5",
+        "valor": "Sobrou"
+      },
+      {
+        "ref": "Resumo!B5",
+        "formula": "=B3-B4"
+      }
+    ],
+    "observacao": "Testado em 28/10/2026 numa planilha pt_BR: SUMPRODUCT com LEFT(data;7) funciona; SUMIFS com texto ISO e TEXT(...;\"aaaa-mm\") não funcionam. O app não depende do Resumo. Deixe B1 vazio para o mês atual ou digite AAAA-MM."
+  }
+}

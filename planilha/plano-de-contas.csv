@@ -1,0 +1,40 @@
+codigo,nome,grupo,natureza_padrao,conta_nos_totais,ordem
+1,Receitas,Receitas,Receita,sim,1
+1.01,Salário,Receitas,Receita,sim,2
+1.02,Pró-labore e distribuição,Receitas,Receita,sim,3
+1.03,Serviços e freelas,Receitas,Receita,sim,4
+1.04,Vendas,Receitas,Receita,sim,5
+1.05,Rendimentos,Receitas,Receita,sim,6
+1.06,Reembolsos,Receitas,Receita,sim,7
+1.99,Outras receitas,Receitas,Receita,sim,8
+2,Essenciais,Essenciais,Despesa,sim,9
+2.01,"Moradia (aluguel, condomínio, IPTU)",Essenciais,Despesa,sim,10
+2.02,"Contas da casa (luz, água, gás, internet, celular)",Essenciais,Despesa,sim,11
+2.03,Mercado,Essenciais,Despesa,sim,12
+2.04,Transporte,Essenciais,Despesa,sim,13
+2.05,Saúde,Essenciais,Despesa,sim,14
+2.06,Educação,Essenciais,Despesa,sim,15
+2.07,Seguros,Essenciais,Despesa,sim,16
+2.08,Impostos e taxas,Essenciais,Despesa,sim,17
+2.09,Filhos e dependentes,Essenciais,Despesa,sim,18
+3,Estilo de vida,Estilo de vida,Despesa,sim,19
+3.01,Restaurantes e delivery,Estilo de vida,Despesa,sim,20
+3.02,Lazer,Estilo de vida,Despesa,sim,21
+3.03,Assinaturas e streaming,Estilo de vida,Despesa,sim,22
+3.04,Compras,Estilo de vida,Despesa,sim,23
+3.05,Viagens,Estilo de vida,Despesa,sim,24
+3.06,Cuidados pessoais,Estilo de vida,Despesa,sim,25
+3.07,Presentes e doações,Estilo de vida,Despesa,sim,26
+3.08,Pets,Estilo de vida,Despesa,sim,27
+4,Financeiro,Financeiro,Despesa,sim,28
+4.01,Tarifas bancárias,Financeiro,Despesa,sim,29
+4.02,Juros e multas,Financeiro,Despesa,sim,30
+4.03,Parcelas de empréstimo,Financeiro,Despesa,sim,31
+5,Investimentos,Investimentos,Investimento,nao,32
+5.01,Aplicações,Investimentos,Investimento,nao,33
+5.02,Resgates,Investimentos,Investimento,nao,34
+6,Movimentações internas,Movimentações internas,,nao,35
+6.01,Pagamento de fatura,Movimentações internas,Fatura,nao,36
+6.02,Transferência própria,Movimentações internas,Transferência própria,nao,37
+6.03,Estorno,Movimentações internas,Estorno,nao,38
+9,A classificar,A classificar,Despesa,sim,39
