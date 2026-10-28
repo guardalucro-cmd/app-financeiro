@@ -1,5 +1,11 @@
 # Mudanças
 
+## 1.1.3 (2026-10-28)
+
+- Cores dos valores em todas as telas: saída sempre em vermelho, entrada em verde, saldo e resultado em verde quando positivos, vermelho quando negativos e amarelo quando zerados.
+- Gráficos de saldo (Visão geral, Projeção e Fluxo de caixa): a linha fica verde acima de zero e vermelha abaixo.
+- Compras e parcelas no cartão continuam em cinza nas listas de previstos, porque entram na fatura e não saem do caixa no dia.
+
 ## 1.1.2 (2026-10-28)
 
 - Projeção pelo caixa: só entra o que sai das contas de dinheiro. Compra, parcela ou conta fixa no cartão não sai do caixa no dia; o que sai é a fatura, no vencimento.

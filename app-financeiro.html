@@ -401,7 +401,7 @@ table.tabela{border-collapse:collapse;width:100%;font-size:14px}
 .pj-sub{margin:18px 0 8px;font-size:13px;font-weight:600;letter-spacing:.02em;color:var(--muted);text-transform:uppercase}
 .pj-meses{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}
 .pj-mes{display:flex;flex-direction:column;gap:2px;min-width:0;padding:10px 12px;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--panel-2)}
-.pj-mes b{font-size:15px;color:var(--neg)}
+.pj-mes b{font-size:15px}
 .pj-mes small{font-size:11.5px;line-height:1.35;overflow-wrap:anywhere}
 .pj-comp .item .tx b,.pj-comp .item .tx small{white-space:normal;overflow:visible}
 .pj-comp .item .vl{flex:0 0 auto;text-align:right}
@@ -526,7 +526,7 @@ body.ag-ativa #fab{display:none}
 <script>
 /* === 50-core.js === */
 /* ===== 50-core.js: estado global e utilidades puras (sem DOM) ===== */
-var APP_VERSAO = '1.1.2';
+var APP_VERSAO = '1.1.3';
 var S = {
   tela: 'visao', planilhaId: '', carregado: false, exemplo: false, erro: null, ultimaCarga: 0, pausaAte: 0,
   lancamentos: [], contas: [], plano: [], orcamento: [], previstos: [], fixas: [], regras: [], config: [], controle: [],
@@ -568,6 +568,10 @@ function addMeses(mes, n) { var m = String(mes).split('-'); var d = new Date(+m[
 function diaDoMes(iso) { var d = parseYmd(iso); return d ? d.getDate() : 0; }
 function diaSemana(iso) { var d = parseYmd(iso); return d ? d.getDay() : 0; }
 function stamp(d) { d = d || new Date(); return ymd(d) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds()); }
+/* cor dos valores (1.1.3): saldo e resultado negativo vermelho, zero amarelo, positivo verde; saída sempre vermelha e entrada sempre verde (zero amarelo) */
+function tomSaldo(n) { n = +n || 0; return n < -0.004 ? 'neg' : (n > 0.004 ? 'pos' : 'warn'); }
+function tomSaida(n) { return Math.abs(+n || 0) < 0.005 ? 'warn' : 'neg'; }
+function tomEntrada(n) { return Math.abs(+n || 0) < 0.005 ? 'warn' : 'pos'; }
 function fold(s) { return String(s == null ? '' : s).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim(); }
 function novoId(p) { return (p || 'X') + Date.now().toString(36).toUpperCase() + Math.floor(Math.random() * 1296).toString(36).toUpperCase(); }
 function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
@@ -2427,8 +2431,20 @@ var UI = {
         var cor = 'var(--' + (s.tom || 'brand') + ')'; var d = '', area = '';
         s.pontos.forEach(function (p, i) { var x = X(i), y = Y(+p.y || 0); d += (i ? ' L' : 'M') + x.toFixed(1) + ' ' + y.toFixed(1); ptsDica.push({ cx: x, cy: y, p: p, s: s }); });
         if (s.pontos.length) { area = d + ' L' + X(s.pontos.length - 1).toFixed(1) + ' ' + Y(Math.max(sc.min, 0)).toFixed(1) + ' L' + X(0).toFixed(1) + ' ' + Y(Math.max(sc.min, 0)).toFixed(1) + ' Z'; }
+        var traco = ' fill="none" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"' + (s.tracejada ? ' stroke-dasharray="5 4"' : '');
+        if (s.porSinal) {
+          /* verde acima de zero, vermelho abaixo: a mesma linha desenhada duas vezes, cada uma recortada de um lado do zero */
+          var cid = 'gs' + (UI.grafico._seq = (UI.grafico._seq || 0) + 1), y0 = Math.max(0, Math.min(H, Y(0)));
+          partes.push('<clipPath id="' + cid + 'p"><rect x="0" y="0" width="' + W + '" height="' + y0 + '"/></clipPath><clipPath id="' + cid + 'n"><rect x="0" y="' + y0 + '" width="' + W + '" height="' + (H - y0) + '"/></clipPath>');
+          [['p', 'var(--pos)'], ['n', 'var(--neg)']].forEach(function (lado) {
+            if (s.area !== false && si === 0) partes.push('<path d="' + area + '" fill="' + lado[1] + '" opacity=".12" clip-path="url(#' + cid + lado[0] + ')"/>');
+            partes.push('<path d="' + d + '" stroke="' + lado[1] + '"' + traco + ' clip-path="url(#' + cid + lado[0] + ')"/>');
+          });
+          if (s.pontos.length) { var uu = s.pontos.length - 1, yu = +s.pontos[uu].y || 0; partes.push('<circle cx="' + X(uu) + '" cy="' + Y(yu) + '" r="3.5" fill="var(--' + tomSaldo(yu) + ')"/>'); }
+          return;
+        }
         if (s.area !== false && si === 0) partes.push('<path d="' + area + '" fill="' + cor + '" opacity=".12"/>');
-        partes.push('<path d="' + d + '" fill="none" stroke="' + cor + '" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"' + (s.tracejada ? ' stroke-dasharray="5 4"' : '') + '/>');
+        partes.push('<path d="' + d + '" stroke="' + cor + '"' + traco + '/>');
         if (s.pontos.length) { var u = s.pontos.length - 1; partes.push('<circle cx="' + X(u) + '" cy="' + Y(+s.pontos[u].y || 0) + '" r="3.5" fill="' + cor + '"/>'); }
       });
       if (o.marcarMinimo && o.series[0] && o.series[0].pontos.length) { var mi = 0; o.series[0].pontos.forEach(function (p, i) { if ((+p.y || 0) < (+o.series[0].pontos[mi].y || 0)) mi = i; }); var pm = o.series[0].pontos[mi]; partes.push('<circle cx="' + X(mi) + '" cy="' + Y(+pm.y || 0) + '" r="5" fill="none" stroke="var(--warn)" stroke-width="2"/>'); }
@@ -3238,7 +3254,7 @@ var Telas = typeof Telas !== 'undefined' ? Telas : {};
         marcador: atrasado ? 'danger' : (p.data === hj ? 'warn' : 'brand'),
         titulo: p.descricao || 'Sem descrição',
         sub: quando + (p.conta_id ? ' · ' + nomeConta(p.conta_id) : ''),
-        valor: fmtMoeda(p.valor), tomValor: 'neg',
+        valor: fmtMoeda(p.valor), tomValor: tomSaida(p.valor),
         onclick: function () { App.ir('vencimentos'); }
       });
     }, UI.el('p', { class: 'muted', text: 'Nada para pagar nos próximos 30 dias.' }));
@@ -3329,7 +3345,7 @@ var Telas = typeof Telas !== 'undefined' ? Telas : {};
     if (neg) corpo.push(UI.aviso({ tom: 'danger', titulo: 'Saldo negativo.', texto: 'No ritmo atual, o saldo fica abaixo de zero em ' + fmtDataCurta(neg.data) + '.' }));
     corpo.push(UI.grafico.linha({
       rotulo: 'Saldo projetado', eixoX: 'data', alturaPx: 200, linhaBase: 0, marcarMinimo: true,
-      series: [{ nome: 'Saldo projetado', tom: 'info', pontos: p.dias.map(function (d) { return { x: d.data, y: d.saldo }; }) }]
+      series: [{ nome: 'Saldo projetado', tom: 'info', porSinal: true, pontos: p.dias.map(function (d) { return { x: d.data, y: d.saldo }; }) }]
     }));
     return UI.cartao({
       titulo: 'Projeção de ' + dias + ' dias', corpo: corpo,
@@ -3387,19 +3403,19 @@ var Telas = typeof Telas !== 'undefined' ? Telas : {};
       var pode = typeof Motor.podeGastarPorDia === 'function' ? tentar('podeGastar', function () { return Motor.podeGastarPorDia(S, mes, hj); }) : null;
 
       var tiles = [];
-      tiles.push({ rotulo: 'Saldo das contas', valor: saldos ? fmtMoeda(saldos.total) : '-', tom: saldos && saldos.total < 0 ? 'neg' : 'neutro', delta: 'Sem contar cartões e empréstimos' });
+      tiles.push({ rotulo: 'Saldo das contas', valor: saldos ? fmtMoeda(saldos.total) : '-', tom: saldos ? tomSaldo(saldos.total) : 'neutro', delta: 'Sem contar cartões e empréstimos' });
       if (comp && comp.total > 0) {
         var prox = comp.cartoes.map(function (k) { return k.proxima; }).filter(Boolean).sort(function (a, b) { return a.data < b.data ? -1 : 1; })[0];
         var somaProx = prox ? arred(comp.cartoes.reduce(function (t, k) { return t + (k.proxima && k.proxima.data === prox.data ? k.proxima.valor : 0); }, 0)) : 0;
-        tiles.push({ rotulo: 'Comprometido', valor: fmtMoeda(comp.total), tom: 'neg', delta: prox ? 'Faturas em ' + fmtDataCurta(prox.data) + ': ' + fmtMoeda(somaProx) : 'Cartões e empréstimos' });
+        tiles.push({ rotulo: 'Comprometido', valor: fmtMoeda(comp.total), tom: tomSaida(comp.total), delta: prox ? 'Faturas em ' + fmtDataCurta(prox.data) + ': ' + fmtMoeda(somaProx) : 'Cartões e empréstimos' });
       }
       if (resumo) {
-        tiles.push({ rotulo: 'Entrou no mês', valor: fmtMoeda(resumo.entrou), tom: 'pos', delta: 'Mês passado: ' + fmtMoeda(resumo.anterior.entrou) });
-        tiles.push({ rotulo: 'Saiu no mês', valor: fmtMoeda(resumo.saiu), tom: 'neutro', delta: 'Mês passado: ' + fmtMoeda(resumo.anterior.saiu) });
-        tiles.push({ rotulo: 'Resultado do mês', valor: fmtMoeda(resumo.sobrou), tom: resumo.sobrou < 0 ? 'neg' : 'pos', delta: resumo.sobrou < 0 ? 'Saiu mais do que entrou' : 'Entrou mais do que saiu' });
+        tiles.push({ rotulo: 'Entrou no mês', valor: fmtMoeda(resumo.entrou), tom: tomEntrada(resumo.entrou), delta: 'Mês passado: ' + fmtMoeda(resumo.anterior.entrou) });
+        tiles.push({ rotulo: 'Saiu no mês', valor: fmtMoeda(resumo.saiu), tom: tomSaida(resumo.saiu), delta: 'Mês passado: ' + fmtMoeda(resumo.anterior.saiu) });
+        tiles.push({ rotulo: 'Resultado do mês', valor: fmtMoeda(resumo.sobrou), tom: tomSaldo(resumo.sobrou), delta: resumo.sobrou < 0 ? 'Saiu mais do que entrou' : 'Entrou mais do que saiu' });
       }
       if (pode) {
-        tiles.push({ rotulo: 'Pode gastar por dia', valor: fmtMoeda(pode.valor), tom: pode.negativo ? 'warn' : 'neutro', delta: pode.negativo ? 'O previsto do mês já foi usado' : 'Até o fim do mês (' + pode.diasRestantes + (pode.diasRestantes === 1 ? ' dia' : ' dias') + ')' });
+        tiles.push({ rotulo: 'Pode gastar por dia', valor: fmtMoeda(pode.valor), tom: pode.negativo ? 'neg' : tomSaldo(pode.valor), delta: pode.negativo ? 'O previsto do mês já foi usado' : 'Até o fim do mês (' + pode.diasRestantes + (pode.diasRestantes === 1 ? ' dia' : ' dias') + ')' });
       }
       root.appendChild(UI.tiles(tiles));
 
@@ -3547,7 +3563,7 @@ var Telas = typeof Telas !== 'undefined' ? Telas : {};
       var tem = g.itens.some(ehTotal);
       var rotulo = cap(DIAS_NOME[diaSemana(g.data)]) + ', ' + fmtDataCurta(g.data) + (g.data === hj ? ' (hoje)' : '');
       alvo.appendChild(UI.el('section', { class: 'la-grupo' },
-        UI.el('div', { class: 'la-dia' }, UI.el('b', { text: rotulo }), tem ? UI.el('span', { class: 'num ' + (t.sobrou < 0 ? 'neg' : 'pos'), text: (t.sobrou < 0 ? '- ' : '+ ') + fmtMoeda(Math.abs(t.sobrou)) }) : null),
+        UI.el('div', { class: 'la-dia' }, UI.el('b', { text: rotulo }), tem ? UI.el('span', { class: 'num ' + tomSaldo(t.sobrou), text: (t.sobrou < 0 ? '- ' : '+ ') + fmtMoeda(Math.abs(t.sobrou)) }) : null),
         tabelaDoDia(g.itens)));
     });
     if (todos.length > visiveis.length) {
@@ -3558,9 +3574,9 @@ var Telas = typeof Telas !== 'undefined' ? Telas : {};
     rodape.hidden = false; rodape.innerHTML = '';
     rodape.appendChild(UI.el('div', { class: 'la-rodape-in' },
       UI.el('span', { text: todos.length + (todos.length === 1 ? ' lançamento' : ' lançamentos') + (S.filtros.mes === 'todos' ? ' em todos os meses' : ' em ' + fmtMes(S.filtros.mes)) }),
-      UI.el('span', { class: 'num' }, 'Entrou ', UI.el('b', { class: 'pos', text: fmtMoeda(tot.entrou) })),
-      UI.el('span', { class: 'num' }, 'Saiu ', UI.el('b', { class: 'neg', text: fmtMoeda(tot.saiu) })),
-      UI.el('span', { class: 'num' }, 'Resultado ', UI.el('b', { class: tot.sobrou < 0 ? 'neg' : 'pos', text: fmtMoeda(tot.sobrou) }))));
+      UI.el('span', { class: 'num' }, 'Entrou ', UI.el('b', { class: tomEntrada(tot.entrou), text: fmtMoeda(tot.entrou) })),
+      UI.el('span', { class: 'num' }, 'Saiu ', UI.el('b', { class: tomSaida(tot.saiu), text: fmtMoeda(tot.saiu) })),
+      UI.el('span', { class: 'num' }, 'Resultado ', UI.el('b', { class: tomSaldo(tot.sobrou), text: fmtMoeda(tot.sobrou) }))));
     rodape.appendChild(UI.el('small', { class: 'muted', text: 'Os totais não contam faturas, transferências próprias nem investimentos.' }));
   }
 
@@ -4027,10 +4043,10 @@ var Telas = typeof Telas !== 'undefined' ? Telas : {};
     var resultado = arred(fluxo.totalEntradas - fluxo.totalSaidas);
 
     root.appendChild(UI.tiles([
-      { rotulo: 'Entradas', valor: fmtMoeda(fluxo.totalEntradas), tom: 'pos', delta: fmtData(iv.inicio).slice(0, 5) + ' a ' + fmtData(iv.fim).slice(0, 5) },
-      { rotulo: 'Saídas', valor: fmtMoeda(fluxo.totalSaidas), tom: 'neg', delta: 'sem faturas e transferências' },
-      { rotulo: 'Resultado', valor: fmtMoeda(resultado), tom: resultado >= 0 ? 'pos' : 'neg', delta: resultado >= 0 ? 'sobrou no período' : 'faltou no período' },
-      { rotulo: 'Saldo hoje', valor: fmtMoeda(saldos.total), tom: saldos.total < 0 ? 'neg' : 'neutro', delta: 'sem cartões e empréstimos' }
+      { rotulo: 'Entradas', valor: fmtMoeda(fluxo.totalEntradas), tom: tomEntrada(fluxo.totalEntradas), delta: fmtData(iv.inicio).slice(0, 5) + ' a ' + fmtData(iv.fim).slice(0, 5) },
+      { rotulo: 'Saídas', valor: fmtMoeda(fluxo.totalSaidas), tom: tomSaida(fluxo.totalSaidas), delta: 'sem faturas e transferências' },
+      { rotulo: 'Resultado', valor: fmtMoeda(resultado), tom: tomSaldo(resultado), delta: resultado >= 0 ? 'sobrou no período' : 'faltou no período' },
+      { rotulo: 'Saldo hoje', valor: fmtMoeda(saldos.total), tom: tomSaldo(saldos.total), delta: 'sem cartões e empréstimos' }
     ]));
 
     if (!fluxo.totalEntradas && !fluxo.totalSaidas) {
@@ -4051,7 +4067,7 @@ var Telas = typeof Telas !== 'undefined' ? Telas : {};
       UI.el('div', { class: 'fl-sub rotulo', text: 'Resultado acumulado no período' }),
       UI.grafico.linha({
         eixoX: 'texto', alturaPx: 180, linhaBase: 0, rotulo: 'Resultado acumulado',
-        series: [{ nome: 'Resultado acumulado', tom: 'brand', pontos: fluxo.pontos.map(function (p) { return { x: p.rotulo, rotulo: p.rotulo, y: p.saldoAcumulado }; }) }]
+        series: [{ nome: 'Resultado acumulado', tom: 'brand', porSinal: true, pontos: fluxo.pontos.map(function (p) { return { x: p.rotulo, rotulo: p.rotulo, y: p.saldoAcumulado }; }) }]
       })
     );
     root.appendChild(UI.cartao({ titulo: 'Entradas, saídas e resultado', corpo: graf, rodape: 'Só receitas e despesas. Faturas pagas, transferências próprias e investimentos ficam de fora para não contar em dobro.' }));
@@ -4087,9 +4103,9 @@ var Telas = typeof Telas !== 'undefined' ? Telas : {};
       var dif = arred(g.atual - g.ant);
       return UI.el('div', { class: 'fl-comp-linha' },
         UI.el('span', { class: 'fl-comp-nome', text: g.grupo }),
-        UI.el('span', { class: 'num muted', text: fmtMoeda(g.ant) }),
-        UI.el('span', { class: 'num', text: fmtMoeda(g.atual) }),
-        UI.el('span', { class: 'num ' + (dif > 0 ? 'neg' : dif < 0 ? 'pos' : 'muted'), text: (dif > 0 ? '+' : '') + fmtMoeda(dif) }));
+        UI.el('span', { class: 'num ' + tomSaida(g.ant), text: fmtMoeda(g.ant) }),
+        UI.el('span', { class: 'num ' + tomSaida(g.atual), text: fmtMoeda(g.atual) }),
+        UI.el('span', { class: 'num ' + (dif > 0 ? 'neg' : dif < 0 ? 'pos' : 'warn'), text: (dif > 0 ? '+' : '') + fmtMoeda(dif) }));
     })) : null;
     if (tabelaComp) tabelaComp.insertBefore(UI.el('div', { class: 'fl-comp-linha fl-comp-cab rotulo' }, UI.el('span', { text: 'Grupo' }), UI.el('span', { text: fmtMesCurto(addMeses(mesDe(h), -1)) }), UI.el('span', { text: fmtMesCurto(mesDe(h)) }), UI.el('span', { text: 'Diferença' })), tabelaComp.firstChild);
     root.appendChild(UI.cartao({ titulo: 'Este mês contra o mês passado', corpo: [corpoComp, tabelaComp], rodape: 'O mês atual vai até hoje, então começa menor.' }));
@@ -4113,7 +4129,7 @@ var Telas = typeof Telas !== 'undefined' ? Telas : {};
     return UI.el('div', { class: 'fl-cat' },
       UI.el('div', { class: 'fl-cat-topo' },
         UI.el('span', { class: 'fl-cat-nome', text: nome, title: nome }),
-        UI.el('span', { class: 'fl-cat-val num', text: fmtMoeda(valor) }),
+        UI.el('span', { class: 'fl-cat-val num ' + tomSaida(valor), text: fmtMoeda(valor) }),
         UI.el('span', { class: 'fl-cat-pct num muted', text: p + '%' })),
       UI.progresso(p));
   }
@@ -4166,17 +4182,17 @@ var Telas = typeof Telas !== 'undefined' ? Telas : {};
     }
     var corpo = [];
     corpo.push(UI.tiles([
-      { rotulo: 'Comprometido', valor: fmtMoeda(c.total), tom: c.total > 0 ? 'neg' : 'neutro', delta: 'cartões e empréstimos' },
-      { rotulo: 'Usado nos cartões', valor: fmtMoeda(c.totalCartoes), tom: 'neutro', delta: 'segundo o banco' },
-      { rotulo: 'Parceladas', valor: fmtMoeda(c.totalParcelado), tom: 'neutro', delta: 'parcelas por vencer' },
-      { rotulo: 'Empréstimos', valor: fmtMoeda(c.totalEmprestimos), tom: 'neutro', delta: 'saldo devedor' }
+      { rotulo: 'Comprometido', valor: fmtMoeda(c.total), tom: tomSaida(c.total), delta: 'cartões e empréstimos' },
+      { rotulo: 'Usado nos cartões', valor: fmtMoeda(c.totalCartoes), tom: tomSaida(c.totalCartoes), delta: 'segundo o banco' },
+      { rotulo: 'Parceladas', valor: fmtMoeda(c.totalParcelado), tom: tomSaida(c.totalParcelado), delta: 'parcelas por vencer' },
+      { rotulo: 'Empréstimos', valor: fmtMoeda(c.totalEmprestimos), tom: tomSaida(c.totalEmprestimos), delta: 'saldo devedor' }
     ]));
 
     corpo.push(UI.el('h3', { class: 'pj-sub', text: 'Quanto já está prometido por mês' }));
     corpo.push(UI.el('div', { class: 'pj-meses' }, c.porMes.map(function (m) {
       return UI.el('div', { class: 'pj-mes' },
         UI.el('span', { class: 'muted', text: fmtMes(m.mes).slice(0, 3) + '/' + m.mes.slice(2, 4) }),
-        UI.el('b', { class: 'num', text: fmtMoeda(m.total) }),
+        UI.el('b', { class: 'num ' + tomSaida(m.total), text: fmtMoeda(m.total) }),
         UI.el('small', { class: 'muted', text: (m.faturas ? 'faturas ' + fmtMoeda(m.faturas) : 'sem fatura') + (m.dividas ? ' · parcelas ' + fmtMoeda(m.dividas) : '') }));
     })));
 
@@ -4188,7 +4204,7 @@ var Telas = typeof Telas !== 'undefined' ? Telas : {};
         return UI.item({
           icone: 'cartao', titulo: k.conta.nome,
           sub: (p ? 'Próxima fatura ' + fmtData(p.data).slice(0, 5) + ': ' + fmtMoeda(p.valor) + (p.estimada ? ' (estimada)' : '') : 'Sem fatura por vir') + (depois ? ' · depois: ' + depois : ''),
-          valor: fmtMoeda(k.usado), tomValor: 'neg', subValor: 'usado'
+          valor: fmtMoeda(k.usado), tomValor: tomSaida(k.usado), subValor: 'usado'
         });
       })));
     }
@@ -4199,7 +4215,7 @@ var Telas = typeof Telas !== 'undefined' ? Telas : {};
         return UI.item({
           icone: 'cartao', titulo: p.descricao + (p.compras > 1 ? ' (' + p.compras + ' compras)' : ''),
           sub: 'Faltam ' + p.faltam + ' de ' + p.total + ' · ' + fmtMoeda(p.porMes) + ' por mês · até ' + mesCurto(p.termina) + ' · ' + p.conta.nome,
-          valor: fmtMoeda(p.restante), tomValor: 'neg', subValor: 'falta pagar'
+          valor: fmtMoeda(p.restante), tomValor: tomSaida(p.restante), subValor: 'falta pagar'
         });
       })));
       if (c.parcelados.length > 12) corpo.push(UI.el('p', { class: 'muted', text: 'E mais ' + (c.parcelados.length - 12) + ' compras parceladas menores.' }));
@@ -4208,9 +4224,9 @@ var Telas = typeof Telas !== 'undefined' ? Telas : {};
     if (c.emprestimos.length || c.dividasMensais.length) {
       corpo.push(UI.el('h3', { class: 'pj-sub', text: 'Empréstimos e financiamentos' }));
       var itens = c.emprestimos.map(function (e) {
-        return UI.item({ icone: 'alerta', titulo: e.conta.nome, sub: 'Saldo devedor informado pelo banco', valor: fmtMoeda(e.saldo), tomValor: 'neg', subValor: 'devido' });
+        return UI.item({ icone: 'alerta', titulo: e.conta.nome, sub: 'Saldo devedor informado pelo banco', valor: fmtMoeda(e.saldo), tomValor: tomSaida(e.saldo), subValor: 'devido' });
       }).concat(c.dividasMensais.map(function (d) {
-        return UI.item({ icone: 'vencimentos', titulo: d.descricao, sub: 'Sai da ' + d.conta.nome + ' todo mês, perto do dia ' + d.dia + ' · já está na projeção', valor: fmtMoeda(d.porMes) + '/mês', tomValor: 'neg' });
+        return UI.item({ icone: 'vencimentos', titulo: d.descricao, sub: 'Sai da ' + d.conta.nome + ' todo mês, perto do dia ' + d.dia + ' · já está na projeção', valor: fmtMoeda(d.porMes) + '/mês', tomValor: tomSaida(d.porMes) });
       }));
       corpo.push(UI.el('div', { class: 'lista pj-comp' }, itens));
     }
@@ -4402,17 +4418,17 @@ var Telas = typeof Telas !== 'undefined' ? Telas : {};
       var totS = arred(proj.dias.reduce(function (t, d) { return t + d.saidas; }, 0));
       caixa.innerHTML = '';
       caixa.appendChild(UI.tiles([
-        { rotulo: 'Saldo hoje', valor: fmtMoeda(proj.saldoInicial), tom: proj.saldoInicial < 0 ? 'neg' : 'neutro', delta: 'contas de dinheiro' },
-        { rotulo: 'Menor saldo', valor: fmtMoeda(proj.minimo.saldo), tom: proj.minimo.saldo < 0 ? 'danger' : (proj.minimo.saldo < proj.saldoInicial * 0.1 ? 'warn' : 'neutro'), delta: 'em ' + fmtData(proj.minimo.data).slice(0, 5) + ' (' + fmtDataRelativa(proj.minimo.data, h) + ')' },
-        { rotulo: 'Entradas previstas', valor: fmtMoeda(totE), tom: 'pos', delta: 'até ' + fmtData(addDays(h, dias)).slice(0, 5) },
-        { rotulo: 'Saídas previstas', valor: fmtMoeda(totS), tom: 'neg', delta: 'do caixa até ' + fmtData(addDays(h, dias)).slice(0, 5) + ', faturas incluídas' }
+        { rotulo: 'Saldo hoje', valor: fmtMoeda(proj.saldoInicial), tom: tomSaldo(proj.saldoInicial), delta: 'contas de dinheiro' },
+        { rotulo: 'Menor saldo', valor: fmtMoeda(proj.minimo.saldo), tom: tomSaldo(proj.minimo.saldo), delta: 'em ' + fmtData(proj.minimo.data).slice(0, 5) + ' (' + fmtDataRelativa(proj.minimo.data, h) + ')' },
+        { rotulo: 'Entradas previstas', valor: fmtMoeda(totE), tom: tomEntrada(totE), delta: 'até ' + fmtData(addDays(h, dias)).slice(0, 5) },
+        { rotulo: 'Saídas previstas', valor: fmtMoeda(totS), tom: tomSaida(totS), delta: 'do caixa até ' + fmtData(addDays(h, dias)).slice(0, 5) + ', faturas incluídas' }
       ]));
       var neg = proj.alertas.filter(function (a) { return a.tipo === 'negativo'; })[0];
       var baixo = proj.alertas.filter(function (a) { return a.tipo === 'baixo'; })[0];
       if (neg) caixa.appendChild(UI.aviso({ tom: 'danger', titulo: 'O saldo fica negativo em ' + fmtData(neg.data).slice(0, 5) + '.', texto: 'Chega a ' + fmtMoeda(neg.saldo) + ' nesse dia. Veja o que dá para adiar ou receber antes.' }));
       else if (baixo) caixa.appendChild(UI.aviso({ tom: 'warn', titulo: 'O saldo fica baixo em ' + fmtData(baixo.data).slice(0, 5) + '.', texto: 'Cai para ' + fmtMoeda(baixo.saldo) + ', menos de 10% do que você tem hoje.' }));
 
-      var series = [{ nome: ativa ? 'Com a simulação' : 'Saldo projetado', tom: ativa ? 'info' : 'brand', pontos: proj.dias.map(function (d) { return { x: d.data, y: d.saldo }; }) }];
+      var series = [{ nome: ativa ? 'Com a simulação' : 'Saldo projetado', tom: ativa ? 'info' : 'brand', porSinal: true, pontos: proj.dias.map(function (d) { return { x: d.data, y: d.saldo }; }) }];
       if (ativa) series.push({ nome: 'Sem simulação', tom: 'muted', tracejada: true, pontos: base.dias.map(function (d) { return { x: d.data, y: d.saldo }; }) });
       caixa.appendChild(UI.cartao({
         titulo: 'Saldo dia a dia', corpo: UI.grafico.linha({ series: series, eixoX: 'data', alturaPx: 240, linhaBase: 0, marcarMinimo: true, rotulo: 'Saldo projetado dia a dia' }),
@@ -4465,7 +4481,7 @@ var Telas = typeof Telas !== 'undefined' ? Telas : {};
       return UI.item({
         icone: p.origem === 'fatura' || p.origem === 'fatura_estimada' || naFatura ? 'cartao' : (p.tipo === 'entrada' ? 'mais-acao' : 'vencimentos'),
         tom: atrasado && !naFatura ? 'danger' : '', titulo: p.descricao, sub: sub + (naFatura ? ' · no cartão: entra na fatura, não sai do caixa' : rotuloVirtual(p)),
-        valor: sinalValor(p), tomValor: p.tipo === 'entrada' ? 'pos' : (naFatura ? 'muted' : ''), onclick: function () { editarPrevisto(p); },
+        valor: sinalValor(p), tomValor: p.tipo === 'entrada' ? tomEntrada(p.valor) : (naFatura ? 'muted' : tomSaida(p.valor)), onclick: function () { editarPrevisto(p); },
         direita: naFatura ? UI.pilula('na fatura', 'info') : (atrasado ? UI.pilula('atrasado', 'danger') : (p._ajustado ? UI.pilula('ajustado', 'info') : (p._estimada ? UI.pilula('estimada', 'info') : null)))
       });
     }));
@@ -4648,7 +4664,7 @@ var Telas = typeof Telas !== 'undefined' ? Telas : {};
       UI.el('div', { class: 'vc-tx' },
         UI.el('b', { text: p.descricao, title: p.descricao }),
         UI.el('small', { text: sub + (p._estimada ? ' · estimada pelas compras no cartão' : (p._recorrente ? ' · repete todo mês no extrato' : (p._virtual ? (naFatura ? ' · vem de uma compra parcelada ou fixa no cartão' : ' · vem de uma fixa') : ''))) })),
-      UI.el('div', { class: 'vc-val num ' + (receber ? 'pos' : (naFatura ? 'muted' : '')), text: (receber ? '+ ' : '') + fmtMoeda(p.valor) }));
+      UI.el('div', { class: 'vc-val num ' + (receber ? tomEntrada(p.valor) : (naFatura ? 'muted' : tomSaida(p.valor))), text: (receber ? '+ ' : '') + fmtMoeda(p.valor) }));
     var marcas = [];
     if (receber) marcas.push(UI.pilula('a receber', 'pos'));
     if (ehFatura) marcas.push(UI.pilula(p._estimada ? 'fatura estimada' : 'fatura do cartão', 'info'));
@@ -4672,7 +4688,7 @@ var Telas = typeof Telas !== 'undefined' ? Telas : {};
   function grupo(titulo, tom, lista, h, pares, total, nota) {
     if (!lista.length) return null;
     return UI.el('section', { class: 'vc-grupo ' + (tom || '') },
-      UI.el('h2', { class: 'vc-grupo-tit' }, UI.el('span', { class: 'marcador ' + (tom || '') }), UI.el('span', { text: titulo }), UI.el('span', { class: 'vc-grupo-n muted', text: lista.length + (lista.length === 1 ? ' item' : ' itens') }), UI.el('span', { class: 'espaco' }), UI.el('span', { class: 'num muted', text: total != null ? fmtMoeda(total) : '' })),
+      UI.el('h2', { class: 'vc-grupo-tit' }, UI.el('span', { class: 'marcador ' + (tom || '') }), UI.el('span', { text: titulo }), UI.el('span', { class: 'vc-grupo-n muted', text: lista.length + (lista.length === 1 ? ' item' : ' itens') }), UI.el('span', { class: 'espaco' }), UI.el('span', { class: 'num ' + (tom === 'info' || total == null ? 'muted' : tomSaida(total)), text: total != null ? fmtMoeda(total) : '' })),
       nota ? UI.el('p', { class: 'muted vc-grupo-nota', text: nota }) : null,
       UI.el('div', { class: 'vc-itens' }, lista.map(function (p) { return cartaoItem(p, h, tom, pares); })));
   }
@@ -4721,9 +4737,9 @@ var Telas = typeof Telas !== 'undefined' ? Telas : {};
     var sete = Motor.vencimentos(vS, { ate: 7, hojeISO: h });
     var saldos = Motor.saldos(S, h);
     root.appendChild(UI.tiles([
-      { rotulo: 'A pagar em 7 dias', valor: fmtMoeda(sete.totalAPagar), tom: sete.totalAPagar > 0 ? 'neg' : 'neutro', delta: sete.atrasados.length ? 'inclui ' + sete.atrasados.length + ' atrasado' + (sete.atrasados.length === 1 ? '' : 's') : 'até ' + fmtData(addDays(h, 7)).slice(0, 5) },
-      { rotulo: 'A receber em 7 dias', valor: fmtMoeda(sete.totalAReceber), tom: sete.totalAReceber > 0 ? 'pos' : 'neutro', delta: 'até ' + fmtData(addDays(h, 7)).slice(0, 5) },
-      { rotulo: 'Saldo hoje', valor: fmtMoeda(saldos.total), tom: saldos.total < 0 ? 'neg' : 'neutro', delta: 'contas de dinheiro' }
+      { rotulo: 'A pagar em 7 dias', valor: fmtMoeda(sete.totalAPagar), tom: tomSaida(sete.totalAPagar), delta: sete.atrasados.length ? 'inclui ' + sete.atrasados.length + ' atrasado' + (sete.atrasados.length === 1 ? '' : 's') : 'até ' + fmtData(addDays(h, 7)).slice(0, 5) },
+      { rotulo: 'A receber em 7 dias', valor: fmtMoeda(sete.totalAReceber), tom: tomEntrada(sete.totalAReceber), delta: 'até ' + fmtData(addDays(h, 7)).slice(0, 5) },
+      { rotulo: 'Saldo hoje', valor: fmtMoeda(saldos.total), tom: tomSaldo(saldos.total), delta: 'contas de dinheiro' }
     ]));
     if (saldos.total < sete.totalAPagar) {
       root.appendChild(UI.aviso({
@@ -4969,8 +4985,8 @@ var Telas = typeof Telas !== 'undefined' ? Telas : {};
     var pctUso = orcado > 0 ? Math.round(realizado / orcado * 100) : 0;
     var tom = pctUso > 100 ? 'danger' : (pctUso >= 80 ? 'warn' : '');
     var dir;
-    if (orcado > 0) dir = UI.el('span', { class: 'ct-valores' }, UI.el('b', { class: 'num ' + (tom || ''), text: fmtMoeda(realizado) }), UI.el('small', { text: 'de ' + fmtMoeda(orcado) + ' (' + pctUso + '%)' }));
-    else dir = UI.el('span', { class: 'ct-valores' }, UI.el('b', { class: 'num', text: fmtMoeda(realizado) }), UI.el('small', { text: 'sem orçamento' }));
+    if (orcado > 0) dir = UI.el('span', { class: 'ct-valores' }, UI.el('b', { class: 'num ' + tomSaida(realizado), text: fmtMoeda(realizado) }), UI.el('small', { text: 'de ' + fmtMoeda(orcado) + ' (' + pctUso + '%)' }));
+    else dir = UI.el('span', { class: 'ct-valores' }, UI.el('b', { class: 'num ' + tomSaida(realizado), text: fmtMoeda(realizado) }), UI.el('small', { text: 'sem orçamento' }));
     var linha = UI.el('div', { class: 'ct-cat', role: 'button', tabindex: '0', title: 'Definir orçamento', onclick: function () { abrirOrcamento(cat, realizado); },
       onkeydown: function (ev) { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); abrirOrcamento(cat, realizado); } } },
       UI.el('div', { class: 'ct-topo' }, UI.el('span', { class: 'ct-nome', text: cat.nome }), dir),
@@ -5039,7 +5055,7 @@ var Telas = typeof Telas !== 'undefined' ? Telas : {};
     if (!lista.length) return null;
     var tot = lista.reduce(function (t, p) { return t + (+p.compromisso || 0); }, 0);
     return UI.cartao({ titulo: 'Parcelas em aberto', extra: UI.el('span', { class: 'rotulo num', text: fmtMoeda(tot) + ' a pagar' }), corpo: UI.el('div', { class: 'lista' }, lista.map(function (p) {
-      return UI.item({ icone: 'cartao', titulo: p.lancamento.descricao, sub: p.pagas + ' de ' + p.total + ', faltam ' + p.faltam + ' de ' + fmtMoeda(p.valor), valor: p.compromisso, subValor: 'ainda por pagar' });
+      return UI.item({ icone: 'cartao', titulo: p.lancamento.descricao, sub: p.pagas + ' de ' + p.total + ', faltam ' + p.faltam + ' de ' + fmtMoeda(p.valor), valor: p.compromisso, tomValor: tomSaida(p.compromisso), subValor: 'ainda por pagar' });
     })) });
   }
 
@@ -5064,7 +5080,7 @@ var Telas = typeof Telas !== 'undefined' ? Telas : {};
       var gasto = 0, orcTotal = 0, acima = 0;
       folhas.forEach(function (c) { var r = mapa[c.codigo] || 0, o = orcadoDe(mes, c.codigo); gasto += r; orcTotal += o; if (o > 0 && r > o) acima++; });
       root.appendChild(UI.tiles([
-        { rotulo: 'Gasto no mês', valor: fmtMoeda(gasto) },
+        { rotulo: 'Gasto no mês', valor: fmtMoeda(gasto), tom: tomSaida(gasto) },
         { rotulo: 'Orçamento do mês', valor: orcTotal > 0 ? fmtMoeda(orcTotal) : 'Não definido', tom: 'neutro' },
         { rotulo: orcTotal > 0 ? (orcTotal - gasto >= 0 ? 'Ainda cabe' : 'Passou do total') : 'Categorias acima', valor: orcTotal > 0 ? fmtMoeda(Math.abs(orcTotal - gasto)) : String(acima), tom: orcTotal > 0 && orcTotal - gasto < 0 ? 'danger' : (acima ? 'warn' : 'pos'), delta: orcTotal > 0 ? (acima ? acima + ' categoria' + (acima === 1 ? '' : 's') + ' acima do orçamento' : 'nenhuma categoria acima') : null }
       ]));
@@ -5183,7 +5199,7 @@ var Telas = typeof Telas !== 'undefined' ? Telas : {};
         meta,
         fat ? UI.el('small', { class: 'cn-sub', text: 'Fatura aberta (' + fmtMesCurto(fat.mes) + '): ' + fmtMoeda(fat.valor) }) : null),
       UI.el('div', { class: 'cn-saldo' },
-        UI.el('b', { class: 'num ' + (divida || saldo < 0 ? 'neg' : ''), text: (divida ? '- ' : '') + fmtMoeda(Math.abs(saldo)) }),
+        UI.el('b', { class: 'num ' + (divida ? tomSaida(saldo) : tomSaldo(saldo)), text: (divida ? '- ' : '') + fmtMoeda(Math.abs(saldo)) }),
         UI.el('small', { text: (divida ? (ehCartao ? 'usado no cartão' : 'a pagar') : 'saldo') + (saldoEm ? ' em ' + fmtDataRelativa(saldoEm) : '') })));
   }
 
