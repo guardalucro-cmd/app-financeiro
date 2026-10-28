@@ -17,13 +17,13 @@
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#081115; --panel:#0E1C22; --panel-2:#122429; --ink:#E6EEF0; --muted:#9AB0B6; --line:#1C323A; --line-2:#16292F;
-  --brand:#3CCB94; --brand-soft:#10302A; --brand-ink:#7FD3AE;
+  --brand:#3CCB94; --brand-soft:#10302A; --brand-ink:#7FD3AE; --on-brand:#06231A;
   --side:#0B171C; --side-active:#122429;
   --pos:#3CCB94; --pos-soft:#10302A; --neg:#F08A72; --neg-soft:#3A1F19; --warn:#E2B35C; --warn-soft:#3A2E14; --danger:#F2766B; --danger-soft:#3B1A18; --info:#7CB8E8; --info-soft:#13283A;
   --sombra:0 1px 2px rgba(0,0,0,.35),0 4px 14px rgba(0,0,0,.25); color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#081115; --panel:#0E1C22; --panel-2:#122429; --ink:#E6EEF0; --muted:#9AB0B6; --line:#1C323A; --line-2:#16292F;
-  --brand:#3CCB94; --brand-soft:#10302A; --brand-ink:#7FD3AE;
+  --brand:#3CCB94; --brand-soft:#10302A; --brand-ink:#7FD3AE; --on-brand:#06231A;
   --side:#0B171C; --side-active:#122429;
   --pos:#3CCB94; --pos-soft:#10302A; --neg:#F08A72; --neg-soft:#3A1F19; --warn:#E2B35C; --warn-soft:#3A2E14; --danger:#F2766B; --danger-soft:#3B1A18; --info:#7CB8E8; --info-soft:#13283A;
   --sombra:0 1px 2px rgba(0,0,0,.35),0 4px 14px rgba(0,0,0,.25); color-scheme:dark}
@@ -46,7 +46,7 @@ p{margin:0}
 #app{display:flex;height:100%;padding-top:env(safe-area-inset-top,0px)}
 #lado{width:var(--lado);flex:0 0 auto;background:var(--side);color:var(--side-ink);display:flex;flex-direction:column;padding-left:max(0px,env(safe-area-inset-left,0px));border-right:1px solid var(--side-line)}
 #lado .marca{display:flex;align-items:center;gap:10px;padding:18px 18px 14px;border-bottom:1px solid var(--side-line)}
-#lado .marca .logo{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,#3CCB94,#0E7A55);display:grid;place-items:center;color:#fff;flex:0 0 auto}
+#lado .marca .logo{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,#3CCB94,#0E7A55);display:grid;place-items:center;color:#06231A;flex:0 0 auto}
 #lado .marca b{font-size:15px;font-weight:600;display:block;line-height:1.1}
 #lado .marca small{font-family:var(--mono);font-size:10.5px;color:var(--side-muted);letter-spacing:.05em}
 #lado nav{padding:10px;display:flex;flex-direction:column;gap:2px;flex:1 1 auto;overflow:auto}
@@ -71,7 +71,7 @@ p{margin:0}
 @media (max-width:900px){
   #lado{display:none}
   #topo{display:flex;align-items:center;gap:10px;height:var(--topo);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));background:var(--side);color:var(--side-ink);flex:0 0 auto}
-  #topo .logo{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#3CCB94,#0E7A55);display:grid;place-items:center;color:#fff}
+  #topo .logo{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#3CCB94,#0E7A55);display:grid;place-items:center;color:#06231A}
   #topo b{font-weight:600;font-size:15px;flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   #topo button{color:var(--side-ink);min-width:44px;min-height:44px;display:grid;place-items:center;border-radius:8px}
   #topo button svg{width:20px;height:20px}
@@ -81,7 +81,7 @@ p{margin:0}
   #barra button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:10.5px;font-weight:500;color:var(--muted);min-height:44px}
   #barra button svg{width:22px;height:22px}
   #barra button.ativo{color:var(--brand)}
-  #fab{display:grid;place-items:center;position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(var(--barra) + 16px + env(safe-area-inset-bottom,0px));width:56px;height:56px;border-radius:999px;background:var(--brand);color:#fff;box-shadow:0 6px 18px rgba(14,122,85,.35);z-index:31}
+  #fab{display:grid;place-items:center;position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(var(--barra) + 16px + env(safe-area-inset-bottom,0px));width:56px;height:56px;border-radius:999px;background:var(--brand);color:var(--on-brand);box-shadow:0 6px 18px rgba(14,122,85,.35);z-index:31}
   #fab svg{width:26px;height:26px}
 }
 /* === 20-kit.css === */
@@ -111,7 +111,8 @@ p{margin:0}
 .pilula.pos{background:var(--pos-soft);color:var(--pos)} .pilula.neg{background:var(--neg-soft);color:var(--neg)} .pilula.warn{background:var(--warn-soft);color:var(--warn)} .pilula.danger{background:var(--danger-soft);color:var(--danger)} .pilula.info{background:var(--info-soft);color:var(--info)} .pilula.brand{background:var(--brand-soft);color:var(--brand-ink)}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:40px;padding:0 14px;border-radius:9px;font-weight:500;font-size:14px;border:1px solid transparent;white-space:nowrap;user-select:none}
 .btn svg{width:17px;height:17px;flex:0 0 auto}
-.btn.primario{background:var(--brand);color:var(--on-brand)}
+.btn.primario{background:var(--brand);color:var(--on-brand);font-weight:600}
+.btn.primario svg{stroke-width:2.2}
 .btn.primario:hover{filter:brightness(1.05)}
 .btn.secundario{background:var(--panel);border-color:var(--line);color:var(--ink)}
 .btn.secundario:hover{background:var(--panel-2)}
@@ -195,7 +196,11 @@ table.tabela{border-collapse:collapse;width:100%;font-size:14px}
 #toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:60;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none;max-width:calc(100% - 32px)}
 @media (max-width:900px){#toast{bottom:calc(var(--barra) + 80px + env(safe-area-inset-bottom,0px))}}
 #toast>div{background:var(--ink);color:var(--bg);padding:10px 14px;border-radius:10px;font-size:13.5px;box-shadow:var(--sombra);max-width:100%;text-align:center}
-#toast>div.pos{background:var(--pos);color:var(--on-brand)} #toast>div.danger{background:var(--danger);color:var(--on-brand)} #toast>div.warn{background:var(--warn);color:var(--on-brand)}
+#toast>div.pos{border-left:4px solid var(--pos)} #toast>div.danger{border-left:4px solid var(--danger)} #toast>div.warn{border-left:4px solid var(--warn)}
+/* filtro geral: carteira (quando há PF e PJ) e conta (quando há mais de uma) */
+.filtro-geral{display:flex;flex-wrap:wrap;gap:8px;align-items:center;min-width:0;max-width:100%}
+.filtro-conta{min-height:36px;max-width:100%;padding:5px 30px 5px 12px;border:1px solid var(--line);border-radius:999px;background:var(--panel) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235B6670' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 10px center/14px;color:var(--ink);font-size:13px;font-weight:500;appearance:none;-webkit-appearance:none;text-overflow:ellipsis}
+.filtro-conta:focus{border-color:var(--brand);outline:none;box-shadow:0 0 0 3px var(--brand-soft)}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
 .chip{padding:7px 12px;border-radius:999px;background:var(--panel);border:1px solid var(--line);font-size:13px;min-height:36px;display:inline-flex;align-items:center;color:var(--ink)}
 .chip:hover{border-color:var(--brand);color:var(--brand)}
@@ -267,6 +272,10 @@ table.tabela{border-collapse:collapse;width:100%;font-size:14px}
 .la-desc{display:flex;flex-direction:column;min-width:0}
 .la-desc b{font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .la-desc small{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.la-extra{display:flex;align-items:center;gap:4px;min-width:0}
+.la-coment{display:inline-flex;align-items:center;gap:4px;min-width:0;color:var(--muted)}
+.la-coment svg{width:13px;height:13px;flex:0 0 auto;color:var(--brand)}
+.la-coment span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .la-cm{cursor:pointer;gap:6px}
 .la-cm-topo{display:flex;align-items:baseline;justify-content:space-between;gap:10px;min-width:0}
 .la-cm-desc{font-weight:500;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -282,7 +291,7 @@ table.tabela{border-collapse:collapse;width:100%;font-size:14px}
 .la-regra{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:var(--r-sm);background:var(--brand-soft);color:var(--ink);font-size:13.5px;min-height:44px;cursor:pointer}
 .la-regra input{width:20px;height:20px;margin-top:1px;flex:0 0 auto;accent-color:var(--brand)}
 @media (max-width:900px){
-  .la-rodape{bottom:calc(var(--barra) + 12px);padding-right:72px} /* espaço para o FAB não cobrir os totais */
+  .la-rodape{bottom:-72px;padding-right:72px} /* o sticky conta a partir do padding de #tela (barra + 84px): -72px deixa os totais 12px acima da barra, sem cobrir a lista; padding à direita para o FAB */
 }
 /* === 32-telas-b.css === */
 /* ===== 32-telas-b.css: Fluxo (.fl-), Projeção (.pj-) e Vencimentos (.vc-) ===== */
@@ -336,6 +345,11 @@ table.tabela{border-collapse:collapse;width:100%;font-size:14px}
 .vc-grupo-n{font-size:12.5px;font-weight:400}
 .vc-grupo.danger .vc-grupo-tit{color:var(--danger)}
 .vc-grupo.warn .vc-grupo-tit{color:var(--warn)}
+.vc-grupo.info .vc-grupo-tit{color:var(--info)}
+.vc-grupo-nota{font-size:12.5px;margin-top:-4px}
+.vc-item.info{border-left:3px solid var(--info);opacity:.92}
+.vc-topo .ic.info{background:var(--info-soft);color:var(--info)}
+.marcador.info{background:var(--info)}
 .vc-itens{display:flex;flex-direction:column;gap:8px}
 .vc-item{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;display:flex;flex-direction:column;gap:10px;min-width:0}
 .vc-item.danger{border-color:var(--danger);background:linear-gradient(0deg,var(--panel),var(--panel)) padding-box}
@@ -503,11 +517,11 @@ body.ag-ativa #fab{display:none}
 <script>
 /* === 50-core.js === */
 /* ===== 50-core.js: estado global e utilidades puras (sem DOM) ===== */
-var APP_VERSAO = '1.0.0';
+var APP_VERSAO = '1.1.0';
 var S = {
   tela: 'visao', planilhaId: '', carregado: false, exemplo: false, erro: null, ultimaCarga: 0, pausaAte: 0,
   lancamentos: [], contas: [], plano: [], orcamento: [], previstos: [], fixas: [], regras: [], config: [], controle: [],
-  filtros: { carteira: 'tudo' }, cenario: { novos: [] }, sync: null
+  filtros: { carteira: 'tudo', conta: '' }, cenario: { novos: [] }, sync: null
 };
 
 var COLS = {
@@ -570,7 +584,20 @@ function categoria(codigo) { return S.plano.filter(function (p) { return p.codig
 function nomeCategoria(codigo) { var c = categoria(codigo); return c ? c.nome : (codigo || 'A classificar'); }
 function grupoDe(codigo) { var raiz = String(codigo || '9').split('.')[0]; var g = S.plano.filter(function (p) { return p.codigo === raiz; })[0]; return g ? g.nome : 'A classificar'; }
 function ehTotal(l) { return l.natureza === 'Receita' || l.natureza === 'Despesa'; }
-function filtrarCarteira(lista) { var c = S.filtros.carteira; if (!c || c === 'tudo') return lista; return lista.filter(function (x) { var cart = x.carteira; if (!cart && x.conta_id) { var ct = conta(x.conta_id); cart = ct ? ct.carteira : ''; } return cart === c; }); }
+/* filtro geral das telas: carteira (PF/PJ) e conta escolhida; serve para lançamentos, previstos, fixas e para a própria lista de contas */
+function filtrarCarteira(lista) {
+  var c = S.filtros.carteira, ct = S.filtros.conta;
+  if ((!c || c === 'tudo') && !ct) return lista;
+  return lista.filter(function (x) {
+    var idConta = ('conta_id' in x) ? x.conta_id : x.id;
+    if (ct && idConta !== ct) return false;
+    if (!c || c === 'tudo') return true;
+    var cart = x.carteira; if (!cart && x.conta_id) { var k = conta(x.conta_id); cart = k ? k.carteira : ''; }
+    return cart === c;
+  });
+}
+function contaManual(c) { return !!c && c.origem !== 'banco'; }
+function contasManuais() { return S.contas.filter(function (c) { return c.ativa !== 'nao' && contaManual(c); }); }
 function linhaParaObj(aba, valores, linha) { var o = { _linha: linha }; var nums = NUMERICAS[aba] || []; COLS[aba].forEach(function (c, i) { var v = valores[i] == null ? '' : valores[i]; o[c] = nums.indexOf(c) >= 0 ? arred(numeroDe(v)) : String(v); }); return o; }
 function objParaLinha(aba, o) { var nums = NUMERICAS[aba] || []; return COLS[aba].map(function (c) { var v = o[c]; if (nums.indexOf(c) >= 0) return arred(numeroDe(v)); return v == null ? '' : String(v); }); }
 function porId(lista, id) { for (var i = 0; i < lista.length; i++) if (lista[i].id === id) return lista[i]; return null; }
@@ -587,7 +614,17 @@ var Motor = (function () {
   /* ---------- apoio interno ---------- */
   function contaDe(S, id) { var cs = S.contas || []; for (var i = 0; i < cs.length; i++) if (cs[i].id === id) return cs[i]; return null; }
   function carteiraDe(S, x) { if (x.carteira) return x.carteira; var c = x.conta_id ? contaDe(S, x.conta_id) : null; return c ? c.carteira : ''; }
-  function filtrar(S, lista) { var f = S.filtros && S.filtros.carteira; if (!f || f === 'tudo') return lista; return lista.filter(function (x) { return carteiraDe(S, x) === f; }); }
+  function filtrar(S, lista) {
+    var f = S.filtros && S.filtros.carteira, ct = S.filtros && S.filtros.conta;
+    if ((!f || f === 'tudo') && !ct) return lista;
+    return lista.filter(function (x) {
+      if (ct && (('conta_id' in x) ? x.conta_id : x.id) !== ct) return false;
+      return !f || f === 'tudo' || carteiraDe(S, x) === f;
+    });
+  }
+  function manual(c) { return !!c && c.origem !== 'banco'; }
+  /* parcela de compra no cartão: já está dentro da fatura, é só informação */
+  function dentroDaFatura(S, p) { if (p.origem !== 'parcela') return false; var c = contaDe(S, p.conta_id); return !!c && c.tipo === 'cartao'; }
   function ativa(x) { return x.ativa !== 'nao'; }
   function pendente(p) { return p.status === 'pendente'; }
   function total(l) { return l.natureza === 'Receita' || l.natureza === 'Despesa'; }
@@ -605,10 +642,10 @@ var Motor = (function () {
   function situacaoDe(realizado, orcado) { if (!(orcado > 0)) return 'sem_orcamento'; var p = realizado / orcado; return p > 1 ? 'acima' : p > 0.8 ? 'atencao' : 'ok'; }
   function chaveParcela(descricao) { return fold(descricao).replace(/\d+\s*\/\s*\d+/g, '').replace(/\s+/g, ' ').trim(); }
 
-  /* saldo de uma conta: do banco vem da aba Contas; manual é a soma dos lançamentos */
+  /* saldo de uma conta: do banco vem da aba Contas; manual é o saldo inicial mais a soma dos lançamentos */
   function saldoConta(S, c, hojeISO) {
     if (c.origem === 'banco') return { saldo: arred(c.saldo), saldo_em: c.saldo_em || '' };
-    var s = 0, ult = '';
+    var s = +c.saldo || 0, ult = '';
     (S.lancamentos || []).forEach(function (l) { if (l.conta_id !== c.id) return; s += l.tipo === 'entrada' ? val(l) : -val(l); if (l.data > ult) ult = l.data; });
     return { saldo: arred(s), saldo_em: ult || hojeISO || '' };
   }
@@ -795,7 +832,7 @@ var Motor = (function () {
       var fim = addDays(hojeISO, dias);
       var itens = [];
       filtrar(S, S.previstos || []).forEach(function (p) {
-        if (!pendente(p)) return;
+        if (!pendente(p) || dentroDaFatura(S, p)) return;
         var aj = cen[p.id];
         if (aj && aj.removido) return;
         var it = Object.assign({}, p);
@@ -828,13 +865,14 @@ var Motor = (function () {
       op = op || {};
       var hojeISO = op.hojeISO || hoje();
       var ate = typeof op.ate === 'number' ? addDays(hojeISO, op.ate) : (op.ate || addDays(hojeISO, 7));
-      var r = { atrasados: [], hoje: [], proximos: [], aReceber: [], totalAPagar: 0, totalAReceber: 0, ate: ate };
+      var r = { atrasados: [], hoje: [], proximos: [], aReceber: [], naFatura: [], totalAPagar: 0, totalAReceber: 0, totalNaFatura: 0, ate: ate };
       filtrar(S, S.previstos || []).filter(function (p) { return pendente(p) && p.data <= ate; }).sort(porData).forEach(function (p) {
+        if (dentroDaFatura(S, p)) { if (p.data >= hojeISO) { r.naFatura.push(p); r.totalNaFatura += val(p); } return; }
         if (p.tipo === 'entrada') { r.aReceber.push(p); r.totalAReceber += val(p); return; }
         if (p.data < hojeISO) r.atrasados.push(p); else if (p.data === hojeISO) r.hoje.push(p); else r.proximos.push(p);
         r.totalAPagar += val(p);
       });
-      r.totalAPagar = arred(r.totalAPagar); r.totalAReceber = arred(r.totalAReceber);
+      r.totalAPagar = arred(r.totalAPagar); r.totalAReceber = arred(r.totalAReceber); r.totalNaFatura = arred(r.totalNaFatura);
       return r;
     },
 
@@ -949,13 +987,14 @@ var Motor = (function () {
       var ok = valor > 0;
       if (!ok) duvidas.push('valor');
 
-      /* 4. conta: nome inteiro, depois tipo (cartão, dinheiro, conta/pix, poupança), depois palavra do nome */
-      var contas = (S.contas || []).filter(ativa), conta_id = '';
+      /* 4. conta: só contas manuais (as do banco recebem lançamentos pelo conector); nome inteiro, depois tipo, depois palavra do nome */
+      var todas = (S.contas || []).filter(ativa), contas = todas.filter(manual), conta_id = '';
       var PREP = '(?:no|na|do|da|pelo|pela|com|via|em|de)';
       function cortaPrepAntes(i) { var mm = t2.slice(0, i).match(new RegExp('\\s*' + PREP + '\\s*$')); if (mm) cortes.push([mm.index, i]); }
       var melhor = null;
-      contas.forEach(function (c) { var n = fold(c.nome); if (!n) return; var i = t2.indexOf(n); if (i >= 0 && (!melhor || n.length > melhor.n.length)) melhor = { c: c, i: i, n: n }; });
-      if (melhor) { conta_id = melhor.c.id; cortes.push([melhor.i, melhor.i + melhor.n.length]); cortaPrepAntes(melhor.i); }
+      todas.forEach(function (c) { var n = fold(c.nome); if (!n) return; var i = t2.indexOf(n); if (i >= 0 && (!melhor || n.length > melhor.n.length)) melhor = { c: c, i: i, n: n }; });
+      /* nome inteiro de uma conta do banco: sai da descrição, mas fica sem conta (a tela pede uma manual) */
+      if (melhor) { if (manual(melhor.c)) conta_id = melhor.c.id; cortes.push([melhor.i, melhor.i + melhor.n.length]); cortaPrepAntes(melhor.i); }
       else {
         var TIPOS = [['cartao', 'cartao|credito'], ['dinheiro', 'dinheiro|especie'], ['corrente', 'conta|pix|debito|banco|transferencia'], ['poupanca', 'poupanca']];
         var padrao = cfgDe(S, 'carteira_padrao', 'PF');
@@ -1001,6 +1040,9 @@ var Motor = (function () {
 
       return { ok: ok, valor: valor, tipo: tipo, natureza: tipo === 'entrada' ? 'Receita' : 'Despesa', descricao: desc, conta_id: conta_id, categoria_codigo: categoria_codigo, data: data, duvidas: duvidas };
     },
+
+    /* parcela de compra no cartão: já está na fatura, não é uma conta a pagar à parte */
+    dentroDaFatura: function (S, p) { return dentroDaFatura(S, p); },
 
     /* compras parceladas com parcelas por vir */
     parcelasEmAberto: function (S) {
@@ -1099,6 +1141,23 @@ var Classificar = (function () {
   return {
     MAPA_BELVO: MAPA_BELVO,
     mapear: mapear,
+
+    /* chave de uma regra a partir da descrição: sem números, códigos e sinais, no máximo 4 palavras e 30 letras; '' se ficar curta demais */
+    chaveRegra: function (descricao) {
+      if (!s(descricao).trim()) return '';
+      var limpa = Classificar.limparDescricao({ description: s(descricao) });
+      var t = fold(limpa).replace(/[0-9]/g, ' ').replace(/[*#\/\-_.,:;()\[\]|]/g, ' ').replace(/\s+/g, ' ').trim();
+      var palavras = t.split(' ').filter(function (p) { return p.length > 1; }).slice(0, 4);
+      var chave = palavras.join(' ').slice(0, 30).trim();
+      return chave.length >= 3 ? chave : '';
+    },
+
+    /* primeira regra cujo texto aparece na descrição (ou null) */
+    regraPara: function (descricao, regras) {
+      var texto = fold(descricao), achada = null;
+      (regras || []).some(function (r) { var c = fold(r.contem); if (c && r.categoria_codigo && texto.indexOf(c) >= 0) { achada = r; return true; } return false; });
+      return achada;
+    },
 
     /* descrição limpa a partir de description e merchant.merchant_name */
     limparDescricao: function (tx) {
@@ -1707,7 +1766,8 @@ var Exemplo = {
     var contas = [
       { id: 'C_PF_CC', nome: 'Nubank conta', tipo: 'corrente', origem: 'banco', belvo_account_id: '', final: '4567', dia_fechamento: '', dia_vencimento: '', carteira: 'PF', saldo: 2350.00, saldo_em: hojeISO, ativa: 'sim' },
       { id: 'C_PF_CARTAO', nome: 'Nubank cartão', tipo: 'cartao', origem: 'banco', belvo_account_id: '', final: '3315', dia_fechamento: '2', dia_vencimento: '9', carteira: 'PF', saldo: 1840.55, saldo_em: hojeISO, ativa: 'sim' },
-      { id: 'C_PJ_CC', nome: 'Nubank PJ conta', tipo: 'corrente', origem: 'banco', belvo_account_id: '', final: '8812', dia_fechamento: '', dia_vencimento: '', carteira: 'PJ', saldo: 12660.09, saldo_em: hojeISO, ativa: 'sim' }
+      { id: 'C_PJ_CC', nome: 'Nubank PJ conta', tipo: 'corrente', origem: 'banco', belvo_account_id: '', final: '8812', dia_fechamento: '', dia_vencimento: '', carteira: 'PJ', saldo: 12660.09, saldo_em: hojeISO, ativa: 'sim' },
+      { id: 'C_CAIXA', nome: 'Caixa', tipo: 'dinheiro', origem: 'manual', belvo_account_id: '', final: '', dia_fechamento: '', dia_vencimento: '', carteira: 'PF', saldo: 300, saldo_em: addDays(hojeISO, -30), ativa: 'sim' }
     ];
     function contaDe(id) { for (var i = 0; i < contas.length; i++) if (contas[i].id === id) return contas[i]; return null; }
 
@@ -1794,6 +1854,11 @@ var Exemplo = {
       lanc(dataPag, 'Pagamento fatura Nubank cartão', arred(soma), 'saida', 'C_PF_CC', '6.01');
     });
 
+    /* lançamentos manuais no Caixa (dinheiro vivo), com comentário */
+    var m1 = lanc(addDays(hojeISO, -6), 'Feira do bairro', 48, 'saida', 'C_CAIXA', '2.03'); m1.origem = 'manual'; m1.observacao = 'Frutas e verduras da semana';
+    var m2 = lanc(addDays(hojeISO, -2), 'Padaria', 12.50, 'saida', 'C_CAIXA', '2.03'); m2.origem = 'manual';
+    var m3 = lanc(addDays(hojeISO, -1), 'Presente da Ana', 80, 'saida', 'C_CAIXA', '3.07'); m3.origem = 'manual'; m3.observacao = 'Aniversário de 7 anos';
+
     /* lançamentos de categoria 9, a classificar e não revisados */
     lanc(addDays(hojeISO, -3), 'Pix enviado para Maria', 150, 'saida', 'C_PF_CC', '9').revisado = 'nao';
     lanc(addDays(hojeISO, -9), 'Boleto pago a Empresa X', 389, 'saida', 'C_PJ_CC', '9').revisado = 'nao';
@@ -1803,7 +1868,7 @@ var Exemplo = {
     /* ordem por data e ids EX1, EX2... */
     brutos.sort(function (a, b2) { return a.data < b2.data ? -1 : a.data > b2.data ? 1 : 0; });
     var lancamentos = brutos.map(function (l, idx) { l.id = 'EX' + (idx + 1); l._linha = idx + 2; return l; });
-    var parcela3 = lancamentos.filter(function (l) { return l.parcela === '3/10'; })[0];
+    var parcela5 = lancamentos.filter(function (l) { return l.parcela === '5/10'; })[0];
 
     /* ---------- fixas ---------- */
     var fixas = [
@@ -1822,7 +1887,7 @@ var Exemplo = {
     previstos.push({ id: 'P7', data: proxData(9), descricao: 'Fatura Nubank cartão', valor: 1840.55, tipo: 'saida', conta_id: 'C_PF_CC', categoria_codigo: '6.01', origem: 'fatura', status: 'pendente', lancamento_id: '', recorrencia_id: '', atualizado_em: stamp() });
     previstos.push({ id: 'P8', data: addDays(hojeISO, 4), descricao: 'Recebimento Cliente Alfa', valor: 3150, tipo: 'entrada', conta_id: 'C_PJ_CC', categoria_codigo: '1.03', origem: 'manual', status: 'pendente', lancamento_id: '', recorrencia_id: '', atualizado_em: stamp() });
     previstos.push({ id: 'P9', data: addDays(hojeISO, 11), descricao: 'Recebimento Cliente Beta', valor: 2400, tipo: 'entrada', conta_id: 'C_PJ_CC', categoria_codigo: '1.03', origem: 'manual', status: 'pendente', lancamento_id: '', recorrencia_id: '', atualizado_em: stamp() });
-    previstos.push({ id: 'P10', data: proxData(17), descricao: 'Loja de Eletrônicos 6/10', valor: 189.90, tipo: 'saida', conta_id: 'C_PF_CARTAO', categoria_codigo: '3.04', origem: 'parcela', status: 'pendente', lancamento_id: '', recorrencia_id: parcela3.id, atualizado_em: stamp() });
+    previstos.push({ id: 'P10', data: proxData(17), descricao: 'Loja de Eletrônicos 6/10', valor: 189.90, tipo: 'saida', conta_id: 'C_PF_CARTAO', categoria_codigo: '3.04', origem: 'parcela', status: 'pendente', lancamento_id: '', recorrencia_id: parcela5.id, atualizado_em: stamp() });
     previstos.forEach(function (p, idx) { p._linha = idx + 2; });
     fixas.forEach(function (f, idx) { f._linha = idx + 2; });
     contas.forEach(function (c, idx) { c._linha = idx + 2; });
@@ -1919,7 +1984,8 @@ var ICONES = {
   baixar: '<path d="M12 4v12M6 10l6 6 6-6"/><path d="M4 20h16"/>', link: '<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>',
   olho: '<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
   estrela: '<path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1 6.2L12 17.3 6.5 20.2l1-6.2L3 9.6l6.2-.9z"/>',
-  relogio: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'
+  relogio: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  comentario: '<path d="M4 5h16v11h-9l-4 3v-3H4z"/>'
 };
 var _TONS_SVG = 'xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"';
 
@@ -2004,7 +2070,39 @@ var UI = {
     opcoes.forEach(function (o) { s.appendChild(UI.el('button', { type: 'button', class: String(o.valor) === String(atual) ? 'ativo' : '', text: o.texto, role: 'tab', 'aria-selected': String(o.valor) === String(atual) ? 'true' : 'false', onclick: function () { Array.prototype.forEach.call(s.children, function (b) { b.classList.remove('ativo'); }); this.classList.add('ativo'); onchange(o.valor); } })); });
     return s;
   },
-  filtroCarteira: function () { return UI.segmentos([{ valor: 'tudo', texto: 'Tudo' }, { valor: 'PF', texto: 'Pessoal' }, { valor: 'PJ', texto: 'Empresa' }], S.filtros.carteira, function (v) { S.filtros.carteira = v; ls('appfin.carteira', v); App.render(); }); },
+  /* filtro geral das telas: Pessoal/Empresa só quando as contas têm as duas carteiras; escolha de conta quando há mais de uma */
+  filtroCarteira: function () {
+    var ativas = S.contas.filter(function (c) { return c.ativa !== 'nao'; });
+    var carts = {}; ativas.forEach(function (c) { carts[c.carteira === 'PJ' ? 'PJ' : 'PF'] = true; });
+    var duas = !!(carts.PF && carts.PJ);
+    if (!duas && ativas.length && S.filtros.carteira !== 'tudo') { S.filtros.carteira = 'tudo'; ls('appfin.carteira', 'tudo'); }
+    if (S.filtros.conta && !ativas.some(function (c) { return c.id === S.filtros.conta; })) { S.filtros.conta = ''; ls('appfin.conta', null); }
+    var wrap = UI.el('div', { class: 'filtro-geral' });
+    if (duas || !ativas.length) {
+      wrap.appendChild(UI.segmentos([{ valor: 'tudo', texto: 'Tudo' }, { valor: 'PF', texto: 'Pessoal' }, { valor: 'PJ', texto: 'Empresa' }], S.filtros.carteira, function (v) {
+        S.filtros.carteira = v; ls('appfin.carteira', v);
+        var c = conta(S.filtros.conta);
+        if (c && v !== 'tudo' && (c.carteira || 'PF') !== v) { S.filtros.conta = ''; ls('appfin.conta', null); }
+        App.render();
+      }));
+    }
+    if (ativas.length >= 2) {
+      var lista = ativas.filter(function (c) { return S.filtros.carteira === 'tudo' || (c.carteira || 'PF') === S.filtros.carteira; });
+      var sel = UI.el('select', { class: 'filtro-conta', 'aria-label': 'Filtrar por conta ou banco', title: 'Filtrar por conta ou banco' });
+      sel.appendChild(UI.el('option', { value: '', text: lista.length === ativas.length ? 'Todas as contas' : 'Todas desta carteira' }));
+      lista.forEach(function (c) { sel.appendChild(UI.el('option', { value: c.id, text: c.nome + (c.final ? ' (' + c.final + ')' : ''), selected: c.id === S.filtros.conta })); });
+      sel.addEventListener('change', function () { S.filtros.conta = sel.value; ls('appfin.conta', sel.value || null); App.render(); });
+      wrap.appendChild(sel);
+    }
+    return wrap;
+  },
+  /* texto curto do filtro ativo, para subtítulos e para o agente */
+  filtroTexto: function () {
+    var partes = [];
+    if (S.filtros.carteira && S.filtros.carteira !== 'tudo') partes.push(UI.carteiraTexto(S.filtros.carteira));
+    if (S.filtros.conta) partes.push(nomeConta(S.filtros.conta));
+    return partes.join(', ');
+  },
   aviso: function (o) { return UI.el('div', { class: 'aviso ' + (o.tom || '') }, UI.icone(o.icone || (o.tom === 'danger' || o.tom === 'warn' ? 'alerta' : 'info')), UI.el('div', {}, o.titulo ? UI.el('b', { text: o.titulo + ' ' }) : null, o.texto || ''), o.acoes ? UI.el('div', { class: 'acoes' }, o.acoes) : null); },
   progresso: function (pctv, tom) { return UI.el('div', { class: 'progresso ' + (tom || '') }, UI.el('i', { style: { width: Math.max(0, Math.min(100, pctv)) + '%' } })); },
 
@@ -2223,8 +2321,29 @@ var Agente = {
     return {
       data: Agente._dm(l.data), descricao: String(l.descricao || '').slice(0, 60), valor: arred(l.valor), tipo: l.tipo,
       categoria: nomeCategoria(l.categoria_codigo), conta: nomeConta(l.conta_id),
-      natureza: l.natureza || '', parcela: l.parcela || undefined
+      natureza: l.natureza || '', parcela: l.parcela || undefined, comentario: l.observacao ? String(l.observacao).slice(0, 120) : undefined
     };
+  },
+
+  /* contas em que a pessoa lança à mão (as do banco recebem tudo pelo conector) */
+  _contasManuais: function (S) { return (S.contas || []).filter(function (c) { return c.ativa !== 'nao' && c.origem !== 'banco'; }); },
+
+  /* o que a pessoa já confirmou: regras e correções revisadas, para o Claude não errar duas vezes a mesma descrição */
+  _exemplosConfirmados: function (S, max) {
+    max = max || 40;
+    var linhas = [], vistos = {};
+    (S.regras || []).forEach(function (r) {
+      if (!r.contem || !r.categoria_codigo || !categoria(r.categoria_codigo)) return;
+      var k = fold(r.contem); if (vistos[k]) return; vistos[k] = true;
+      linhas.push('"' + String(r.contem).slice(0, 40) + '" -> ' + r.categoria_codigo + ' ' + nomeCategoria(r.categoria_codigo) + ' (regra)');
+    });
+    var rev = (S.lancamentos || []).filter(function (l) { return l.revisado === 'sim' && l.categoria_codigo && l.categoria_codigo !== '9' && l.descricao; });
+    rev = ordenarPorData(rev, true);
+    for (var i = 0; i < rev.length && linhas.length < max; i++) {
+      var l = rev[i], k2 = fold(l.descricao).slice(0, 40); if (vistos[k2]) continue; vistos[k2] = true;
+      linhas.push('"' + String(l.descricao).slice(0, 40) + '" -> ' + l.categoria_codigo + ' ' + nomeCategoria(l.categoria_codigo));
+    }
+    return linhas;
   },
 
   _previstoCurto: function (p) {
@@ -2247,11 +2366,12 @@ var Agente = {
 
     // HOJE (fixa)
     var filtro = S.filtros && S.filtros.carteira && S.filtros.carteira !== 'tudo' ? S.filtros.carteira : 'tudo (PF e PJ)';
+    var filtroConta = S.filtros && S.filtros.conta ? nomeConta(S.filtros.conta) : 'todas as contas';
     var semRevisar = S.lancamentos.filter(function (l) { return l.revisado === 'nao'; }).length;
     var ultimaSync = ctl('ultima_sync', '');
     secao('HOJE', [
       'Data de hoje: ' + dm(hojeISO) + ' (' + fmtMes(mesAtual) + '). Mês em análise: ' + fmtMes(mes) + '.',
-      'Filtro de carteira ativo: ' + filtro + '. Carteira padrão: ' + cfg('carteira_padrao', 'PF') + '.',
+      'Filtro de carteira ativo: ' + filtro + '. Filtro de conta: ' + filtroConta + '. Carteira padrão: ' + cfg('carteira_padrao', 'PF') + '.',
       'Última atualização com o banco: ' + (ultimaSync ? ultimaSync : 'nunca') + '. Lançamentos sem revisar: ' + semRevisar + '.',
       'Contas: ' + S.contas.length + '. Lançamentos: ' + S.lancamentos.length + '. Previstos pendentes: ' + S.previstos.filter(function (p) { return p.status === 'pendente'; }).length + '. Fixas ativas: ' + S.fixas.filter(function (f) { return f.ativa !== 'nao'; }).length + '.',
       S.exemplo ? 'ATENÇÃO: dados de exemplo, não são da pessoa.' : ''
@@ -2320,15 +2440,16 @@ var Agente = {
 
     // PRÓXIMOS DIAS (lista, até 40)
     var ate = addDays(hojeISO, dias);
-    var v = Agente._tenta('vencimentos', [S, { ate: ate, hojeISO: hojeISO }], { atrasados: [], hoje: [], proximos: [], aReceber: [], totalAPagar: 0, totalAReceber: 0 });
+    var v = Agente._tenta('vencimentos', [S, { ate: ate, hojeISO: hojeISO }], { atrasados: [], hoje: [], proximos: [], aReceber: [], naFatura: [], totalAPagar: 0, totalAReceber: 0, totalNaFatura: 0 });
     function linhaPrev(p, rotulo) { return dm(p.data) + ' | ' + String(p.descricao || '').slice(0, 40) + ' | ' + fmtMoeda(p.valor) + ' | ' + (p.tipo === 'entrada' ? 'entra' : 'sai') + ' | ' + nomeConta(p.conta_id) + (rotulo ? ' | ' + rotulo : ''); }
     var prevLinhas = []
       .concat((v.atrasados || []).map(function (p) { return linhaPrev(p, 'ATRASADO'); }))
       .concat((v.hoje || []).map(function (p) { return linhaPrev(p, 'HOJE'); }))
       .concat((v.proximos || []).map(function (p) { return linhaPrev(p, ''); }))
       .concat((v.aReceber || []).map(function (p) { return linhaPrev(p, 'a receber'); }))
+      .concat((v.naFatura || []).map(function (p) { return linhaPrev(p, 'parcela já dentro da fatura, não é conta à parte'); }))
       .slice(0, 40);
-    prevLinhas.unshift('A pagar até ' + dm(ate) + ': ' + fmtMoeda(v.totalAPagar) + ' (' + ((v.atrasados || []).length) + ' atrasados, ' + ((v.hoje || []).length) + ' hoje, ' + ((v.proximos || []).length) + ' próximos). A receber: ' + fmtMoeda(v.totalAReceber) + '.');
+    prevLinhas.unshift('A pagar até ' + dm(ate) + ': ' + fmtMoeda(v.totalAPagar) + ' (' + ((v.atrasados || []).length) + ' atrasados, ' + ((v.hoje || []).length) + ' hoje, ' + ((v.proximos || []).length) + ' próximos). A receber: ' + fmtMoeda(v.totalAReceber) + '.' + ((v.naFatura || []).length ? ' Parcelas no cartão já dentro da fatura (só informação): ' + fmtMoeda(v.totalNaFatura) + '.' : ''));
     if (prevLinhas.length === 1) prevLinhas.push('Nenhum previsto pendente no período.');
     secao('PRÓXIMOS ' + dias + ' DIAS (previstos pendentes)', prevLinhas, 1);
 
@@ -2354,7 +2475,7 @@ var Agente = {
     // ÚLTIMOS LANÇAMENTOS (lista, 15)
     var ult = ordenarPorData(filtrarCarteira(S.lancamentos).filter(ehTotal), true).slice(0, 15);
     secao('ÚLTIMOS 15 LANÇAMENTOS (receita e despesa)', ult.length ? ult.map(function (l) {
-      return dm(l.data) + ' | ' + String(l.descricao || '').slice(0, 40) + ' | ' + fmtMoeda(l.valor) + ' | ' + (l.tipo === 'entrada' ? 'entrou' : 'saiu') + ' | ' + nomeCategoria(l.categoria_codigo) + ' | ' + nomeConta(l.conta_id) + (l.parcela ? ' | parcela ' + l.parcela : '') + (l.revisado === 'nao' ? ' | sem revisar' : '');
+      return dm(l.data) + ' | ' + String(l.descricao || '').slice(0, 40) + ' | ' + fmtMoeda(l.valor) + ' | ' + (l.tipo === 'entrada' ? 'entrou' : 'saiu') + ' | ' + nomeCategoria(l.categoria_codigo) + ' | ' + nomeConta(l.conta_id) + (l.parcela ? ' | parcela ' + l.parcela : '') + (l.observacao ? ' | comentário: ' + String(l.observacao).slice(0, 40) : '') + (l.revisado === 'nao' ? ' | sem revisar' : '');
     }) : ['Nenhum lançamento.'], 6);
 
     // CONFIG (fixa)
@@ -2505,9 +2626,11 @@ var Agente = {
           function m(lista, n) { return (lista || []).slice(0, n).map(Agente._previstoCurto); }
           return {
             ate: Agente._dm(addDays(c.hojeISO, dias)),
-            totalAPagar: arred(v.totalAPagar), totalAReceber: arred(v.totalAReceber),
-            contagem: { atrasados: (v.atrasados || []).length, hoje: (v.hoje || []).length, proximos: (v.proximos || []).length, aReceber: (v.aReceber || []).length },
-            atrasados: m(v.atrasados, 10), hoje: m(v.hoje, 5), proximos: m(v.proximos, 10), aReceber: m(v.aReceber, 5)
+            totalAPagar: arred(v.totalAPagar), totalAReceber: arred(v.totalAReceber), totalParcelasNaFatura: arred(v.totalNaFatura),
+            contagem: { atrasados: (v.atrasados || []).length, hoje: (v.hoje || []).length, proximos: (v.proximos || []).length, aReceber: (v.aReceber || []).length, parcelasNaFatura: (v.naFatura || []).length },
+            atrasados: m(v.atrasados, 10), hoje: m(v.hoje, 5), proximos: m(v.proximos, 10), aReceber: m(v.aReceber, 5),
+            parcelasNaFatura: m(v.naFatura, 5),
+            observacao: (v.naFatura || []).length ? 'As parcelas no cartão já estão dentro da fatura: são só informação, não somam no total a pagar.' : ''
           };
         }
       },
@@ -2704,6 +2827,7 @@ var Agente = {
     var codigos = {};
     S.plano.forEach(function (p) { codigos[String(p.codigo)] = true; });
     var plano = Agente._planoParaPrompt(S);
+    var exemplos = Agente._exemplosConfirmados(S, 40);
     var lotes = [];
     for (var i = 0; i < itens.length; i += 40) lotes.push(itens.slice(i, i + 40));
 
@@ -2711,6 +2835,7 @@ var Agente = {
       var linhas = lote.map(function (d) { return JSON.stringify({ id: String(d.id), descricao: String(d.descricao || '').slice(0, 80), valor: arred(d.valor), tipo: d.tipo || '' }); }).join('\n');
       var prompt = 'Você classifica lançamentos bancários de uma pessoa no Brasil no plano de contas abaixo. Lançamentos "saida" são gastos; "entrada" são recebimentos.\n\n' +
         'PLANO DE CONTAS (codigo: nome (grupo))\n' + plano + '\n\n' +
+        (exemplos.length ? 'O QUE A PESSOA JÁ CONFIRMOU (descrição -> categoria). Siga estes exemplos sempre que a descrição for parecida: a pessoa corrigiu à mão e não quer o mesmo erro de novo.\n' + exemplos.join('\n') + '\n\n' : '') +
         'LANÇAMENTOS (um JSON por linha)\n' + linhas + '\n\n' +
         'Responda só com um JSON array com um objeto por lançamento, no formato [{"id": "...", "categoria_codigo": "...", "confianca": 0.0 a 1.0}]. ' +
         'Use só códigos que existem no plano. Se não der para saber, use "9" com confiança baixa. Não invente códigos nem ids.';
@@ -2755,11 +2880,11 @@ var Agente = {
     if (local && local.ok && !duvidas.length) return Promise.resolve(Agente._normalizarFrase(local, local, S, hojeISO));
     if (!Agente.pronto()) return Promise.resolve(Agente._normalizarFrase(local || {}, local, S, hojeISO));
 
-    var contas = S.contas.filter(function (c) { return c.ativa !== 'nao'; }).map(function (c) { return c.id + ': ' + c.nome + ' (' + c.tipo + ', ' + c.carteira + ')'; }).join('\n');
+    var contas = Agente._contasManuais(S).map(function (c) { return c.id + ': ' + c.nome + ' (' + c.tipo + ', ' + c.carteira + ')'; }).join('\n');
     var prompt = 'Hoje é ' + hojeISO + '. Transforme a frase abaixo, escrita por uma pessoa no Brasil, em um lançamento financeiro.\n\n' +
       'FRASE: ' + texto + '\n\n' +
-      'CONTAS DISPONÍVEIS (id: nome (tipo, carteira))\n' + (contas || '(nenhuma)') + '\n' +
-      'Conta padrão quando a frase não disser: a primeira conta corrente da carteira ' + cfg('carteira_padrao', 'PF') + '. "No cartão" é a conta do tipo cartao.\n\n' +
+      'CONTAS DISPONÍVEIS (id: nome (tipo, carteira)). Só contas manuais: as do banco recebem lançamentos pelo conector e não entram aqui.\n' + (contas || '(nenhuma)') + '\n' +
+      'Conta padrão quando a frase não disser: a primeira conta do tipo dinheiro da carteira ' + cfg('carteira_padrao', 'PF') + ', ou a primeira da lista. "No cartão" é uma conta do tipo cartao da lista; se não houver, deixe conta_id vazio.\n\n' +
       'CATEGORIAS (codigo: nome (grupo))\n' + Agente._planoParaPrompt(S) + '\n\n' +
       (local ? 'Leitura automática parcial (pode estar incompleta): ' + JSON.stringify({ valor: local.valor, tipo: local.tipo, descricao: local.descricao, conta_id: local.conta_id, categoria_codigo: local.categoria_codigo, data: local.data, duvidas: duvidas }) + '\n\n' : '') +
       'Responda só com um JSON {"valor": número positivo, "tipo": "entrada" ou "saida", "descricao": texto curto, "conta_id": id de uma conta da lista ou "", "categoria_codigo": código da lista ou "9", "data": "AAAA-MM-DD"}. ' +
@@ -2780,11 +2905,13 @@ var Agente = {
     var valor = arred(numeroDe(r.valor)); if (!(valor > 0)) valor = arred(numeroDe(reserva.valor)); if (!(valor > 0)) valor = 0;
     var tipo = r.tipo === 'entrada' || r.tipo === 'saida' ? r.tipo : (reserva.tipo === 'entrada' || reserva.tipo === 'saida' ? reserva.tipo : 'saida');
     var descricao = String(r.descricao || reserva.descricao || '').trim().slice(0, 80);
+    var manuais = Agente._contasManuais(S);
+    function manual(id) { return manuais.some(function (c) { return c.id === id; }); }
     var conta_id = String(r.conta_id || '').trim();
-    if (!conta(conta_id)) conta_id = conta(reserva.conta_id) ? reserva.conta_id : '';
+    if (!manual(conta_id)) conta_id = manual(reserva.conta_id) ? reserva.conta_id : '';
     if (!conta_id) {
       var cartPadrao = cfg('carteira_padrao', 'PF');
-      var padrao = S.contas.filter(function (c) { return c.ativa !== 'nao' && c.carteira === cartPadrao && c.tipo === 'corrente'; })[0] || S.contas.filter(function (c) { return c.ativa !== 'nao'; })[0];
+      var padrao = manuais.filter(function (c) { return c.carteira === cartPadrao && c.tipo === 'dinheiro'; })[0] || manuais.filter(function (c) { return c.carteira === cartPadrao; })[0] || manuais[0];
       conta_id = padrao ? padrao.id : '';
     }
     var cat = String(r.categoria_codigo || '').trim();
@@ -2793,7 +2920,7 @@ var Agente = {
     var duvidas = [];
     if (!(valor > 0)) duvidas.push('Não entendi o valor.');
     if (!descricao) duvidas.push('Não entendi a descrição.');
-    if (!conta_id) duvidas.push('Não há conta cadastrada.');
+    if (!conta_id) duvidas.push('Nenhuma conta manual: o lançamento vai para o Caixa, que o app cria.');
     return { valor: valor, tipo: tipo, descricao: descricao, conta_id: conta_id, categoria_codigo: cat, data: data, duvidas: duvidas };
   }
 };
@@ -2869,7 +2996,7 @@ var Telas = typeof Telas !== 'undefined' ? Telas : {};
       box.appendChild(UI.el('p', { class: 'muted', text: 'As dicas do Claude aparecem quando você abre este app dentro do Claude.' }));
       return UI.cartao({ titulo: 'Dicas do Claude', corpo: box });
     }
-    var chave = hoje() + '|' + S.filtros.carteira;
+    var chave = hoje() + '|' + S.filtros.carteira + '|' + (S.filtros.conta || '');
     var c = S._dicasCache;
     if (c && c.chave === chave) {
       if (c.lista) pintarDicas(box, c.lista);
@@ -3064,11 +3191,16 @@ var Telas = typeof Telas !== 'undefined' ? Telas : {};
     var entrada = l.tipo === 'entrada';
     return UI.el('span', { class: entrada ? 'pos' : 'neg', text: (entrada ? '+ ' : '- ') + fmtMoeda(l.valor) });
   }
+  /* linha pequena embaixo da descrição: parcela e o comentário da pessoa (com o ícone de balão) */
+  function linhaExtra(l) {
+    if (!l.parcela && !l.observacao) return null;
+    return UI.el('small', { class: 'muted la-extra' },
+      l.parcela ? UI.el('span', { text: 'parcela ' + l.parcela }) : null,
+      l.parcela && l.observacao ? ' · ' : null,
+      l.observacao ? UI.el('span', { class: 'la-coment', title: l.observacao }, UI.icone('comentario'), UI.el('span', { text: l.observacao })) : null);
+  }
   function descricaoElemento(l) {
-    var extra = [];
-    if (l.parcela) extra.push('parcela ' + l.parcela);
-    if (l.observacao) extra.push(l.observacao);
-    return UI.el('div', { class: 'la-desc' }, UI.el('b', { text: l.descricao || 'Sem descrição', title: l.descricao || '' }), extra.length ? UI.el('small', { class: 'muted', text: extra.join(' · ') }) : null);
+    return UI.el('div', { class: 'la-desc' }, UI.el('b', { text: l.descricao || 'Sem descrição', title: l.descricao || '' }), linhaExtra(l));
   }
   function cartaoMobile(l) {
     var sub = [nomeConta(l.conta_id)];
@@ -3076,7 +3208,7 @@ var Telas = typeof Telas !== 'undefined' ? Telas : {};
     return UI.el('div', { class: 'cm-item la-cm' },
       UI.el('div', { class: 'la-cm-topo' }, UI.el('b', { class: 'la-cm-desc', text: l.descricao || 'Sem descrição' }), UI.el('span', { class: 'la-cm-valor num' }, valorElemento(l))),
       UI.el('div', { class: 'la-cm-base' }, pilulaCategoria(l), UI.el('small', { class: 'muted', text: sub.join(' · ') })),
-      l.parcela || l.observacao ? UI.el('small', { class: 'muted', text: [l.parcela ? 'parcela ' + l.parcela : '', l.observacao || ''].filter(Boolean).join(' · ') }) : null);
+      linhaExtra(l));
   }
   function tabelaDoDia(linhas) {
     return UI.tabela({
@@ -3105,7 +3237,7 @@ var Telas = typeof Telas !== 'undefined' ? Telas : {};
         icone: 'lancamentos', titulo: 'Nenhum lançamento com esses filtros', texto: 'Tente outro mês, outra palavra ou limpe os filtros.',
         acao: UI.botao('Limpar filtros', { onclick: function () { S.filtros.busca = ''; S.filtros.tipo = 'todos'; S.filtros.categoria = 'todas'; S.filtros.soAClassificar = false; S.filtros.mes = 'todos'; mostrar = POR_PAGINA; redesenharTudo(); } })
       }) : UI.vazio({
-        icone: 'lancamentos', titulo: 'Nenhum lançamento ainda', texto: 'Escreva como fala, por exemplo: "almoço 42 no cartão ontem".',
+        icone: 'lancamentos', titulo: 'Nenhum lançamento ainda', texto: 'Atualize com o banco ou escreva como fala, por exemplo: "almoço 42 no dinheiro ontem".',
         acao: UI.botao('Lançar o primeiro', { tom: 'primario', onclick: function () { abrirLancamento(); } })
       }));
       rodape.innerHTML = ''; rodape.hidden = true;
@@ -3167,14 +3299,27 @@ var Telas = typeof Telas !== 'undefined' ? Telas : {};
   function classificarLote(pend) {
     if (rodando) return;
     var fatia = pend.slice(0, LIMITE_LOTE);
-    var itens = fatia.map(function (l) { return { id: l.id, descricao: l.descricao, valor: l.valor, tipo: l.tipo }; });
+    /* 1. o que as suas regras já sabem resolve na hora, sem gastar o Claude */
+    var porRegra = [], antesRegra = [], restante = [];
+    fatia.forEach(function (l) {
+      var r = typeof Classificar !== 'undefined' && Classificar.regraPara ? Classificar.regraPara(l.descricao, S.regras) : null;
+      if (r && r.categoria_codigo !== '9' && r.categoria_codigo !== (l.categoria_codigo || '9')) {
+        antesRegra.push({ categoria_codigo: l.categoria_codigo, natureza: l.natureza, atualizado_em: l.atualizado_em });
+        l.categoria_codigo = r.categoria_codigo; l.natureza = r.natureza || naturezaDaCategoria(r.categoria_codigo, l.tipo, l.natureza);
+        porRegra.push(l);
+      } else restante.push(l);
+    });
+    if (porRegra.length) gravarLote(porRegra, antesRegra, porRegra.length + (porRegra.length === 1 ? ' lançamento resolvido' : ' lançamentos resolvidos') + ' pelas suas regras.', 'Não gravou as categorias das regras');
+    if (!restante.length) { desenharLista(); return; }
+    /* 2. o resto vai para o Claude, que recebe as correções já confirmadas como exemplo */
+    var itens = restante.map(function (l) { return { id: l.id, descricao: l.descricao, valor: l.valor, tipo: l.tipo }; });
     rodando = true; desenharLista();
     UI.toast('Pedindo ao Claude para classificar ' + itens.length + '...');
     Promise.resolve().then(function () { return Agente.classificarLote(itens, S); }).then(function (res) {
       rodando = false;
       var porId = {}; (res || []).forEach(function (r) { porId[r.id] = r; });
       var alterados = [], antes = [];
-      fatia.forEach(function (l) {
+      restante.forEach(function (l) {
         var r = porId[l.id];
         if (!r || !r.categoria_codigo || r.categoria_codigo === '9' || r.categoria_codigo === l.categoria_codigo) return;
         antes.push({ categoria_codigo: l.categoria_codigo, natureza: l.natureza, atualizado_em: l.atualizado_em });
@@ -3224,7 +3369,22 @@ var Telas = typeof Telas !== 'undefined' ? Telas : {};
   function redesenharTudo() { desenharFiltros(); desenharLista(); }
 
   /* ---------- formulário (novo e edição) ---------- */
-  function contasAtivas() { return S.contas.filter(function (c) { return c.ativa !== 'nao'; }); }
+  /* lançamento manual só entra em conta manual (caixa, dinheiro, cartão anotado à mão): as contas do banco recebem tudo pelo conector */
+  var CAIXA_NOVO = '__caixa__';
+  function contasParaLancar(l) {
+    if (l && l.origem === 'banco') return [conta(l.conta_id)].filter(Boolean);
+    return contasManuais();
+  }
+  /* cria a conta "Caixa" quando a pessoa ainda não tem nenhuma conta manual */
+  function garantirCaixa() {
+    var existente = contasManuais().filter(function (c) { return c.tipo === 'dinheiro'; })[0] || contasManuais()[0];
+    if (existente) return existente;
+    var obj = { id: novoId('C'), nome: 'Caixa', tipo: 'dinheiro', origem: 'manual', belvo_account_id: '', final: '', dia_fechamento: '', dia_vencimento: '', carteira: cfg('carteira_padrao', 'PF'), saldo: 0, saldo_em: hoje(), ativa: 'sim' };
+    S.contas.push(obj);
+    Dados.gravar(function () { return Dados.anexar('Contas', obj); }, function () { var k = S.contas.indexOf(obj); if (k >= 0) S.contas.splice(k, 1); }, 'Não criei a conta Caixa');
+    UI.toast('Criei a conta "Caixa" para os seus lançamentos manuais. Você pode renomear em Contas.', 'pos');
+    return obj;
+  }
   function pegar(id) { var e = $(id); return e ? e.value : ''; }
   function definir(id, v) {
     var e = $(id); if (!e || v == null || v === '') return;
@@ -3233,20 +3393,27 @@ var Telas = typeof Telas !== 'undefined' ? Telas : {};
   }
 
   function montarFormulario(l, aoEditar) {
-    var cts = contasAtivas();
+    var doBanco = !!(l && l.origem === 'banco');
+    var cts = contasParaLancar(l);
     var catOriginal = l ? (l.categoria_codigo || '9') : '9';
     var cartPadrao = cfg('carteira_padrao', 'PF');
-    var contaInicial = l ? l.conta_id : (cts.filter(function (c) { return c.carteira === cartPadrao && c.tipo === 'corrente'; })[0] || cts[0] || {}).id || '';
+    var contaInicial = l ? l.conta_id : '';
+    if (!l && S.filtros.conta && cts.some(function (c) { return c.id === S.filtros.conta; })) contaInicial = S.filtros.conta;
+    if (!contaInicial) contaInicial = (cts.filter(function (c) { return c.carteira === cartPadrao && c.tipo === 'dinheiro'; })[0] || cts.filter(function (c) { return c.carteira === cartPadrao; })[0] || cts[0] || {}).id || '';
     var cartInicial = l ? (l.carteira || (conta(l.conta_id) || {}).carteira || cartPadrao) : ((conta(contaInicial) || {}).carteira || cartPadrao);
     var opcoesConta = cts.map(function (c) { return { valor: c.id, texto: c.nome + (c.final ? ' (final ' + c.final + ')' : '') }; });
     if (l && l.conta_id && !cts.some(function (c) { return c.id === l.conta_id; })) opcoesConta.unshift({ valor: l.conta_id, texto: nomeConta(l.conta_id) });
+    if (!opcoesConta.length) { opcoesConta.push({ valor: CAIXA_NOVO, texto: 'Caixa (vou criar para você)' }); contaInicial = CAIXA_NOVO; }
+    var ajudaConta = doBanco ? 'Veio do banco: a conta não muda.' : 'Só contas manuais. As do banco recebem os lançamentos pelo conector.';
 
-    var regra = UI.el('label', { class: 'la-regra', hidden: true }, UI.el('input', { type: 'checkbox', id: 'la-f-regra' }), UI.el('span', { id: 'la-f-regra-tx', text: 'Criar regra para descrições parecidas' }));
+    /* aprendizado: quando a pessoa corrige a categoria, a regra já vem marcada para a correção valer nas próximas */
+    var regra = UI.el('label', { class: 'la-regra', hidden: true }, UI.el('input', { type: 'checkbox', id: 'la-f-regra', checked: true }), UI.el('span', { id: 'la-f-regra-tx', text: 'Lembrar esta correção para descrições parecidas' }));
     function atualizarRegra() {
       var cod = pegar('la-f-cat'), desc = pegar('la-f-desc');
-      var mostrarRegra = !!cod && cod !== '9' && cod !== catOriginal && !!desc.trim();
+      var chave = chaveRegra(desc);
+      var mostrarRegra = !!cod && cod !== '9' && cod !== catOriginal && !!chave;
       regra.hidden = !mostrarRegra;
-      if (mostrarRegra) { var chave = chaveRegra(desc); $('la-f-regra-tx').textContent = 'Criar regra: sempre que a descrição tiver "' + chave + '", usar ' + nomeCategoria(cod); }
+      if (mostrarRegra) $('la-f-regra-tx').textContent = 'Lembrar: descrições com "' + chave + '" vão para ' + nomeCategoria(cod) + ' daqui em diante.';
     }
     var avisaEdicao = function () { if (aoEditar) aoEditar(); };
 
@@ -3257,36 +3424,53 @@ var Telas = typeof Telas !== 'undefined' ? Telas : {};
       UI.campo({ id: 'la-f-desc', rotulo: 'Descrição', tipo: 'texto', valor: l ? l.descricao : '', placeholder: 'Ex.: almoço no restaurante', oninput: function () { avisaEdicao(); atualizarRegra(); } }),
       UI.el('div', { class: 'campos' },
         UI.campo({ id: 'la-f-tipo', rotulo: 'Tipo', tipo: 'select', valor: l ? l.tipo : 'saida', opcoes: [{ valor: 'saida', texto: 'Saída (gasto)' }, { valor: 'entrada', texto: 'Entrada (recebimento)' }], onchange: avisaEdicao }),
-        UI.campo({ id: 'la-f-conta', rotulo: 'Conta', tipo: 'select', valor: contaInicial, opcoes: opcoesConta.length ? opcoesConta : [{ valor: '', texto: 'Nenhuma conta cadastrada' }], onchange: function (v) { var c = conta(v); if (c && c.carteira) definir('la-f-cart', c.carteira); avisaEdicao(); } })),
+        UI.campo({ id: 'la-f-conta', rotulo: 'Conta', tipo: 'select', valor: contaInicial, opcoes: opcoesConta, ajuda: ajudaConta, onchange: function (v) { var c = conta(v); if (c && c.carteira) definir('la-f-cart', c.carteira); avisaEdicao(); } })),
       UI.el('div', { class: 'campos' },
         UI.campo({ id: 'la-f-cat', rotulo: 'Categoria', tipo: 'select', valor: catOriginal, opcoes: opcoesCategoria(catOriginal), onchange: function () { avisaEdicao(); atualizarRegra(); } }),
         UI.campo({ id: 'la-f-cart', rotulo: 'Carteira', tipo: 'select', valor: cartInicial, opcoes: [{ valor: 'PF', texto: 'Pessoal' }, { valor: 'PJ', texto: 'Empresa' }], onchange: avisaEdicao })),
       regra,
-      UI.campo({ id: 'la-f-obs', rotulo: 'Observação (opcional)', tipo: 'texto', valor: l ? l.observacao : '', onchange: avisaEdicao })
+      UI.campo({ id: 'la-f-obs', rotulo: 'Comentário (opcional)', tipo: 'textarea', valor: l ? l.observacao : '', placeholder: 'Para lembrar do que se trata. Ex.: jantar de aniversário da Ana', onchange: avisaEdicao })
     ];
-    if (l && l.origem === 'banco') corpo.push(UI.el('small', { class: 'muted', text: 'Este lançamento veio do banco. Se mudar o valor ou a data, a planilha fica diferente do extrato.' }));
+    if (doBanco) corpo.push(UI.el('small', { class: 'muted', text: 'Este lançamento veio do banco. Se mudar o valor ou a data, a planilha fica diferente do extrato.' }));
     return { corpo: corpo, atualizarRegra: atualizarRegra, catOriginal: catOriginal };
   }
 
   function chaveRegra(desc) {
-    var limpa = typeof Classificar !== 'undefined' && Classificar.limparDescricao ? Classificar.limparDescricao({ description: desc }) : desc;
-    return String(limpa || desc).trim().slice(0, 30).trim();
+    if (typeof Classificar !== 'undefined' && Classificar.chaveRegra) return Classificar.chaveRegra(desc);
+    return String(desc || '').trim().slice(0, 30).trim();
   }
 
   function lerFormulario() {
     var valor = arred(numeroDe(pegar('la-f-valor')));
-    var o = { data: pegar('la-f-data'), descricao: pegar('la-f-desc').trim(), valor: valor, tipo: pegar('la-f-tipo') === 'entrada' ? 'entrada' : 'saida', conta_id: pegar('la-f-conta'), categoria_codigo: pegar('la-f-cat') || '9', carteira: pegar('la-f-cart') === 'PJ' ? 'PJ' : 'PF', observacao: pegar('la-f-obs').trim() };
+    var o = { data: pegar('la-f-data'), descricao: pegar('la-f-desc').trim(), valor: valor, tipo: pegar('la-f-tipo') === 'entrada' ? 'entrada' : 'saida', conta_id: pegar('la-f-conta'), categoria_codigo: pegar('la-f-cat') || '9', carteira: pegar('la-f-cart') === 'PJ' ? 'PJ' : 'PF', observacao: pegar('la-f-obs').trim().slice(0, 200) };
     var erro = '';
     if (!parseYmd(o.data)) erro = 'Escolha a data.';
     else if (!o.descricao) erro = 'Escreva a descrição.';
     else if (!(valor > 0)) erro = 'Informe um valor maior que zero.';
-    else if (!o.conta_id) erro = 'Escolha a conta. Se não houver nenhuma, cadastre uma na tela Contas.';
+    else if (!o.conta_id) erro = 'Escolha a conta.';
     o.erro = erro;
     o.criarRegra = !!($('la-f-regra') && $('la-f-regra').checked && !$('la-f-regra').closest('label').hidden);
     return o;
   }
+  /* a opção "Caixa (vou criar para você)" vira uma conta manual de verdade na hora de salvar */
+  function resolverConta(d) {
+    if (d.conta_id !== CAIXA_NOVO) return;
+    var c = garantirCaixa();
+    d.conta_id = c.id; d.carteira = c.carteira || d.carteira;
+  }
 
-  function criarRegra(desc, cod, natureza) {
+  /* aprendizado: a regra nova corrige na hora os outros lançamentos ainda não revisados que batem com ela */
+  function aplicarRegraNosPendentes(contem, cod, natureza, excetoId) {
+    var chave = fold(contem);
+    var alvo = S.lancamentos.filter(function (l) { return l.id !== excetoId && l.revisado !== 'sim' && (l.categoria_codigo || '9') !== cod && fold(l.descricao).indexOf(chave) >= 0; });
+    if (!alvo.length) return;
+    var antes = alvo.map(function (l) { return { categoria_codigo: l.categoria_codigo, natureza: l.natureza, atualizado_em: l.atualizado_em }; });
+    alvo.forEach(function (l) { l.categoria_codigo = cod; l.natureza = natureza; });
+    App.render();
+    gravarLote(alvo, antes, 'A regra corrigiu ' + alvo.length + (alvo.length === 1 ? ' lançamento parecido' : ' lançamentos parecidos') + ' que ainda não tinha revisão.', 'Não gravou as correções da regra');
+  }
+
+  function criarRegra(desc, cod, natureza, excetoId) {
     var contem = chaveRegra(desc);
     if (!contem) return;
     var existente = S.regras.filter(function (r) { return fold(r.contem) === fold(contem); })[0];
@@ -3299,12 +3483,14 @@ var Telas = typeof Telas !== 'undefined' ? Telas : {};
       S.regras.push(r);
       Dados.gravar(function () { return Dados.anexar('Regras', r); }, function () { var i = S.regras.indexOf(r); if (i >= 0) S.regras.splice(i, 1); }, 'Não gravou a regra');
     }
-    UI.toast('Regra criada: "' + contem + '" vai para ' + nomeCategoria(cod) + '.', 'pos');
+    UI.toast('Aprendi: "' + contem + '" vai para ' + nomeCategoria(cod) + ' daqui em diante.', 'pos');
+    aplicarRegraNosPendentes(contem, cod, natureza, excetoId);
   }
 
   function salvarNovo() {
     var d = lerFormulario();
     if (d.erro) { UI.toast(d.erro, 'warn'); return false; }
+    resolverConta(d);
     var natureza = naturezaDaCategoria(d.categoria_codigo, d.tipo, '');
     var obj = {
       id: novoId('L'), data: d.data, descricao: d.descricao, valor: d.valor, tipo: d.tipo, conta_id: d.conta_id, categoria_codigo: d.categoria_codigo, natureza: natureza,
@@ -3314,13 +3500,14 @@ var Telas = typeof Telas !== 'undefined' ? Telas : {};
     UI.fecharFolha(); App.render();
     Dados.gravar(function () { return Dados.anexar('Lancamentos', obj); }, function () { var i = S.lancamentos.indexOf(obj); if (i >= 0) S.lancamentos.splice(i, 1); }, 'Não gravou o lançamento');
     UI.toast('Lançamento salvo: ' + obj.descricao + ', ' + fmtMoeda(obj.valor) + '.', 'pos');
-    if (d.criarRegra) criarRegra(obj.descricao, obj.categoria_codigo, natureza);
+    if (d.criarRegra) criarRegra(obj.descricao, obj.categoria_codigo, natureza, obj.id);
     return true;
   }
 
   function salvarEdicao(l, catOriginal) {
     var d = lerFormulario();
     if (d.erro) { UI.toast(d.erro, 'warn'); return false; }
+    resolverConta(d);
     var antes = Object.assign({}, l);
     var natureza = d.categoria_codigo === catOriginal ? l.natureza : naturezaDaCategoria(d.categoria_codigo, d.tipo, l.natureza);
     Object.assign(l, { data: d.data, descricao: d.descricao, valor: d.valor, tipo: d.tipo, conta_id: d.conta_id, categoria_codigo: d.categoria_codigo, natureza: natureza, carteira: d.carteira, observacao: d.observacao });
@@ -3328,7 +3515,7 @@ var Telas = typeof Telas !== 'undefined' ? Telas : {};
     UI.fecharFolha(); App.render();
     Dados.gravar(function () { return Dados.atualizar('Lancamentos', l); }, function () { Object.assign(l, antes); }, 'Não gravou a alteração');
     UI.toast('Alterações salvas.', 'pos');
-    if (d.criarRegra) criarRegra(l.descricao, l.categoria_codigo, natureza);
+    if (d.criarRegra) criarRegra(l.descricao, l.categoria_codigo, natureza, l.id);
     return true;
   }
 
@@ -3373,7 +3560,7 @@ var Telas = typeof Telas !== 'undefined' ? Telas : {};
       form.atualizarRegra();
     }
     function textoDuvidas(r) {
-      var m = { conta: 'a conta', categoria: 'a categoria' };
+      var m = { conta: 'a conta (só contas manuais recebem lançamento manual)', categoria: 'a categoria' };
       var lista = (r.duvidas || []).map(function (d) { return m[d] || d; });
       return lista.length ? 'Confira: ' + lista.join(', ') + '.' : '';
     }
@@ -3398,7 +3585,7 @@ var Telas = typeof Telas !== 'undefined' ? Telas : {};
       }
     }
 
-    var campoFrase = UI.campo({ id: 'la-f-frase', rotulo: 'Escreva como fala', tipo: 'texto', valor: frase || '', placeholder: 'almoço 42 no cartão ontem' });
+    var campoFrase = UI.campo({ id: 'la-f-frase', rotulo: 'Escreva como fala', tipo: 'texto', valor: frase || '', placeholder: 'almoço 42 no dinheiro ontem' });
     campoFrase.querySelector('input').addEventListener('keydown', function (ev) { if (ev.key === 'Enter') { ev.preventDefault(); entender(); } });
     var bloco = UI.el('div', { class: 'la-frase' }, campoFrase, UI.botao('Entender', { tom: 'secundario', icone: 'agente', onclick: entender }), estado);
 
@@ -3742,7 +3929,7 @@ var Telas = typeof Telas !== 'undefined' ? Telas : {};
   /* formulário de previsto novo */
   function novoPrevisto() {
     var h = hoje();
-    var contaPad = (S.contas.filter(function (c) { return c.ativa !== 'nao' && c.tipo === 'corrente' && (S.filtros.carteira === 'tudo' || c.carteira === S.filtros.carteira); })[0] || {}).id || '';
+    var contaPad = S.filtros.conta || (S.contas.filter(function (c) { return c.ativa !== 'nao' && c.tipo === 'corrente' && (S.filtros.carteira === 'tudo' || c.carteira === S.filtros.carteira); })[0] || {}).id || '';
     UI.folha({
       titulo: 'Novo previsto',
       corpo: [
@@ -3911,13 +4098,13 @@ var Telas = typeof Telas !== 'undefined' ? Telas : {};
     var corpoLista;
     if (!lista.length) corpoLista = UI.el('div', { class: 'muted', text: 'Nada previsto para estes ' + dias + ' dias. Gere os previstos das fixas ou adicione um.' });
     else corpoLista = UI.el('div', { class: 'lista pj-lista' }, lista.map(function (p) {
-      var atrasado = p.data < h;
+      var atrasado = p.data < h, naFatura = Motor.dentroDaFatura(vS, p);
       var sub = [fmtDataRelativa(p.data, h) + ' · ' + fmtData(p.data).slice(0, 5), conta(p.conta_id) ? conta(p.conta_id).nome : null, p.categoria_codigo ? nomeCategoria(p.categoria_codigo) : null].filter(Boolean).join(' · ');
       return UI.item({
-        icone: p.origem === 'fatura' ? 'cartao' : (p.tipo === 'entrada' ? 'mais-acao' : 'vencimentos'),
-        tom: atrasado ? 'danger' : '', titulo: p.descricao, sub: sub + (p._virtual ? ' · sugerido, ainda não gravado' : ''),
-        valor: sinalValor(p), tomValor: p.tipo === 'entrada' ? 'pos' : '', onclick: function () { editarPrevisto(p); },
-        direita: atrasado ? UI.pilula('atrasado', 'danger') : (p._ajustado ? UI.pilula('ajustado', 'info') : null)
+        icone: p.origem === 'fatura' || naFatura ? 'cartao' : (p.tipo === 'entrada' ? 'mais-acao' : 'vencimentos'),
+        tom: atrasado && !naFatura ? 'danger' : '', titulo: p.descricao, sub: sub + (naFatura ? ' · já entra na fatura, não soma na projeção' : (p._virtual ? ' · sugerido, ainda não gravado' : '')),
+        valor: sinalValor(p), tomValor: p.tipo === 'entrada' ? 'pos' : (naFatura ? 'muted' : ''), onclick: function () { editarPrevisto(p); },
+        direita: naFatura ? UI.pilula('na fatura', 'info') : (atrasado ? UI.pilula('atrasado', 'danger') : (p._ajustado ? UI.pilula('ajustado', 'info') : null))
       });
     }));
 
@@ -3988,10 +4175,15 @@ var Telas = typeof Telas !== 'undefined' ? Telas : {};
     }, msgErro || 'Não gravou a alteração');
   }
 
-  /* marca como pago/recebido e cria o lançamento, tudo numa gravação só */
+  /* marca como pago/recebido. Em conta manual cria o lançamento junto; em conta do banco só marca, porque o lançamento chega pelo conector */
   function registrarPagamento(p, dataPg, valorPg, contaId) {
     var antes = Object.assign({}, p), virtual = !!p._virtual;
     var ct = conta(contaId || p.conta_id);
+    if (ct && !contaManual(ct)) {
+      salvarPrevisto(p, { status: 'pago' }, 'Não gravou o ' + (p.tipo === 'entrada' ? 'recebimento' : 'pagamento'));
+      UI.toast('Marcado como ' + (p.tipo === 'entrada' ? 'recebido' : 'pago') + '. O lançamento chega na próxima atualização com o banco.', 'pos');
+      return;
+    }
     var l = {
       id: novoId('L'), data: dataPg, descricao: p.descricao, valor: arred(valorPg), tipo: p.tipo, conta_id: contaId || p.conta_id || '',
       categoria_codigo: p.categoria_codigo || '9', natureza: naturezaDe(p), origem: 'manual', revisado: 'sim',
@@ -4032,7 +4224,7 @@ var Telas = typeof Telas !== 'undefined' ? Telas : {};
           UI.campo({ id: 'vc-valor', rotulo: receber ? 'Valor recebido (R$)' : 'Valor pago (R$)', tipo: 'moeda', valor: p.valor }),
           UI.campo({ id: 'vc-data', rotulo: 'Data', tipo: 'date', valor: h })),
         contas.length ? UI.campo({ id: 'vc-conta', rotulo: 'Conta', tipo: 'select', valor: p.conta_id, opcoes: contas }) : null,
-        UI.el('p', { class: 'muted', text: 'Vou marcar o previsto como ' + (receber ? 'recebido' : 'pago') + ' e criar o lançamento. Se algo falhar, os dois voltam ao que eram.' })
+        UI.el('p', { class: 'muted', text: 'Vou marcar o previsto como ' + (receber ? 'recebido' : 'pago') + '. Em conta manual, crio o lançamento junto. Em conta do banco, o lançamento chega na próxima atualização com o banco.' })
       ],
       acoes: [
         UI.botao('Cancelar', { onclick: UI.fecharFolha }),
@@ -4085,19 +4277,23 @@ var Telas = typeof Telas !== 'undefined' ? Telas : {};
     var receber = p.tipo === 'entrada';
     var par = pares[p.id];
     var ct = conta(p.conta_id);
+    var naFatura = tom === 'info';
     var sub = [fmtDataRelativa(p.data, h) + ' · ' + fmtData(p.data).slice(0, 5), ct ? ct.nome : null, p.categoria_codigo ? nomeCategoria(p.categoria_codigo) : null].filter(Boolean).join(' · ');
     var ehFatura = p.origem === 'fatura' || p.categoria_codigo === '6.01';
     var topo = UI.el('div', { class: 'vc-topo' },
-      UI.el('span', { class: 'ic ' + (tom || '') }, UI.icone(ehFatura ? 'cartao' : (receber ? 'mais-acao' : 'vencimentos'))),
+      UI.el('span', { class: 'ic ' + (tom || '') }, UI.icone(ehFatura || naFatura ? 'cartao' : (receber ? 'mais-acao' : 'vencimentos'))),
       UI.el('div', { class: 'vc-tx' },
         UI.el('b', { text: p.descricao, title: p.descricao }),
-        UI.el('small', { text: sub + (p._virtual ? ' · vem de uma fixa' : '') })),
-      UI.el('div', { class: 'vc-val num ' + (receber ? 'pos' : ''), text: (receber ? '+ ' : '') + fmtMoeda(p.valor) }));
+        UI.el('small', { text: sub + (p._virtual ? (naFatura ? ' · vem de uma compra parcelada' : ' · vem de uma fixa') : '') })),
+      UI.el('div', { class: 'vc-val num ' + (receber ? 'pos' : (naFatura ? 'muted' : '')), text: (receber ? '+ ' : '') + fmtMoeda(p.valor) }));
     var marcas = [];
     if (receber) marcas.push(UI.pilula('a receber', 'pos'));
     if (ehFatura) marcas.push(UI.pilula('fatura do cartão', 'info'));
+    if (naFatura) marcas.push(UI.pilula('já entra na fatura', 'info'));
     if (par) marcas.push(UI.pilula('parece já pago', 'warn'));
     var item = UI.el('div', { class: 'vc-item ' + (tom || '') }, topo, marcas.length ? UI.el('div', { class: 'vc-marcas' }, marcas) : null);
+    /* parcela de compra no cartão: só informação, quem se paga é a fatura */
+    if (naFatura) return item;
     if (par) {
       item.appendChild(UI.el('div', { class: 'vc-par' },
         UI.el('span', { class: 'muted', text: 'Achei um lançamento parecido: ' + par.lancamento.descricao + ', ' + fmtMoeda(par.lancamento.valor) + ' em ' + fmtData(par.lancamento.data).slice(0, 5) + '.' }),
@@ -4110,10 +4306,11 @@ var Telas = typeof Telas !== 'undefined' ? Telas : {};
     return item;
   }
 
-  function grupo(titulo, tom, lista, h, pares, total) {
+  function grupo(titulo, tom, lista, h, pares, total, nota) {
     if (!lista.length) return null;
     return UI.el('section', { class: 'vc-grupo ' + (tom || '') },
       UI.el('h2', { class: 'vc-grupo-tit' }, UI.el('span', { class: 'marcador ' + (tom || '') }), UI.el('span', { text: titulo }), UI.el('span', { class: 'vc-grupo-n muted', text: lista.length + (lista.length === 1 ? ' item' : ' itens') }), UI.el('span', { class: 'espaco' }), UI.el('span', { class: 'num muted', text: total != null ? fmtMoeda(total) : '' })),
+      nota ? UI.el('p', { class: 'muted vc-grupo-nota', text: nota }) : null,
       UI.el('div', { class: 'vc-itens' }, lista.map(function (p) { return cartaoItem(p, h, tom, pares); })));
   }
 
@@ -4176,10 +4373,11 @@ var Telas = typeof Telas !== 'undefined' ? Telas : {};
     /* lista de pendentes */
     var venc = Motor.vencimentos(vS, { ate: GERAR_ATE, hojeISO: h });
     var todos = ordenarPorData([].concat(venc.atrasados, venc.hoje, venc.proximos, venc.aReceber));
+    var naFatura = ordenarPorData(venc.naFatura || []);
     var pares = {};
     Motor.conciliar(S, { hojeISO: h }).forEach(function (par) { pares[par.previsto.id] = par; });
 
-    if (!todos.length) {
+    if (!todos.length && !naFatura.length) {
       root.appendChild(UI.vazio({
         icone: 'vencimentos', titulo: 'Nada a vencer por enquanto',
         texto: 'Não há contas a pagar nem a receber nos próximos dias. Gere os previstos das suas contas fixas na Projeção.',
@@ -4194,19 +4392,21 @@ var Telas = typeof Telas !== 'undefined' ? Telas : {};
     var gHoje = visiveis.filter(function (p) { return p.data === h; });
     var gProx = visiveis.filter(function (p) { return p.data > h && p.data <= limiteAviso; });
     var gDepois = visiveis.filter(function (p) { return p.data > limiteAviso; });
+    var gFatura = naFatura.filter(function (p) { return diaSel ? p.data === diaSel : p.data <= addDays(h, HORIZONTE); });
 
     var coluna = UI.el('div', { class: 'vc-coluna' });
     if (diaSel) {
       coluna.appendChild(UI.el('div', { class: 'vc-filtro' }, UI.pilula('Dia ' + fmtData(diaSel).slice(0, 5), 'info'), UI.botao('Ver todos', { pequeno: true, onclick: function () { diaSel = ''; App.render(); } })));
-      if (!visiveis.length) coluna.appendChild(UI.vazio({ icone: 'calendario', titulo: 'Nada vence neste dia', texto: 'Escolha outro dia no calendário ou volte para ver todos.' }));
+      if (!visiveis.length && !gFatura.length) coluna.appendChild(UI.vazio({ icone: 'calendario', titulo: 'Nada vence neste dia', texto: 'Escolha outro dia no calendário ou volte para ver todos.' }));
     }
     [
       grupo('Vencidos', 'danger', gVenc, h, pares, totalSaidas(gVenc)),
       grupo('Hoje', 'warn', gHoje, h, pares, totalSaidas(gHoje)),
       grupo('Próximos ' + avisoDias + ' dias', 'warn', gProx, h, pares, totalSaidas(gProx)),
-      grupo(diaSel ? 'Neste dia' : 'Depois, até ' + fmtData(addDays(h, HORIZONTE)).slice(0, 5), '', gDepois, h, pares, totalSaidas(gDepois))
+      grupo(diaSel ? 'Neste dia' : 'Depois, até ' + fmtData(addDays(h, HORIZONTE)).slice(0, 5), '', gDepois, h, pares, totalSaidas(gDepois)),
+      grupo('Parcelas no cartão', 'info', gFatura, h, pares, totalSaidas(gFatura), 'Só para você saber: estas parcelas já estão dentro da fatura do cartão. Não entram no total a pagar e se pagam junto com a fatura.')
     ].forEach(function (g) { if (g) coluna.appendChild(g); });
-    if (!diaSel && !visiveis.length) coluna.appendChild(UI.vazio({ icone: 'vencimentos', titulo: 'Nada vence nos próximos ' + HORIZONTE + ' dias', texto: 'Há vencimentos mais para frente. Use o calendário ou a Projeção.' }));
+    if (!diaSel && !visiveis.length && !gFatura.length) coluna.appendChild(UI.vazio({ icone: 'vencimentos', titulo: 'Nada vence nos próximos ' + HORIZONTE + ' dias', texto: 'Há vencimentos mais para frente. Use o calendário ou a Projeção.' }));
 
     root.appendChild(UI.el('div', { class: 'vc-corpo' }, coluna, calendario(todos, h)));
   }
@@ -4568,7 +4768,7 @@ var Telas = typeof Telas !== 'undefined' ? Telas : {};
       UI.el('div', { class: 'campos' },
         UI.campo({ rotulo: 'Dia de fechamento', tipo: 'numero', id: 'cn-fecha', valor: base.dia_fechamento, ajuda: 'Só para cartão' }),
         UI.campo({ rotulo: 'Dia de vencimento', tipo: 'numero', id: 'cn-venc', valor: base.dia_vencimento, ajuda: 'Só para cartão' })),
-      manual ? UI.campo({ rotulo: 'Saldo inicial (R$)', tipo: 'moeda', id: 'cn-saldo', valor: base.saldo || '', ajuda: 'Valor de partida. Os lançamentos desta conta somam a partir dele.' }) : UI.el('p', { class: 'muted cn-ajuda', text: 'O saldo desta conta vem do banco e é atualizado a cada sincronização.' }),
+      manual ? UI.campo({ rotulo: 'Saldo inicial (R$)', tipo: 'moeda', id: 'cn-saldo', valor: base.saldo || '', ajuda: 'Valor de partida. Os lançamentos manuais desta conta somam a partir dele.' }) : UI.el('p', { class: 'muted cn-ajuda', text: 'O saldo e os lançamentos desta conta vêm do banco, a cada atualização. Lançamentos manuais vão para as contas manuais.' }),
       manual ? UI.campo({ rotulo: 'Final (4 dígitos, opcional)', tipo: 'texto', id: 'cn-final', valor: base.final, ajuda: 'Só os 4 últimos dígitos, para você reconhecer a conta.' }) : null,
       UI.campo({ rotulo: 'Situação', tipo: 'select', id: 'cn-ativa', valor: base.ativa === 'nao' ? 'nao' : 'sim', opcoes: [{ valor: 'sim', texto: 'Ativa' }, { valor: 'nao', texto: 'Desativada (some dos saldos)' }] })
     ];
@@ -4705,7 +4905,7 @@ var Telas = typeof Telas !== 'undefined' ? Telas : {};
 
       var lista = filtrarCarteira(S.contas);
       if (!lista.length) {
-        root.appendChild(UI.vazio({ icone: 'contas', titulo: S.contas.length ? 'Nenhuma conta nesta carteira' : 'Nenhuma conta ainda', texto: S.contas.length ? 'Troque o filtro de carteira para ver as outras.' : 'Conecte seu banco ou crie uma conta manual para começar.', acao: UI.botao('Criar conta manual', { tom: 'primario', icone: 'mais-acao', onclick: function () { abrirConta(null); } }) }));
+        root.appendChild(UI.vazio({ icone: 'contas', titulo: S.contas.length ? 'Nenhuma conta neste filtro' : 'Nenhuma conta ainda', texto: S.contas.length ? 'Troque o filtro de carteira ou de conta para ver as outras.' : 'Conecte seu banco ou crie uma conta manual para começar.', acao: UI.botao('Criar conta manual', { tom: 'primario', icone: 'mais-acao', onclick: function () { abrirConta(null); } }) }));
       } else {
         var ordem = { corrente: 0, poupanca: 1, dinheiro: 2, outra: 3, cartao: 4 };
         lista = lista.slice().sort(function (a, b) { return (a.ativa === 'nao') - (b.ativa === 'nao') || (ordem[a.tipo] || 0) - (ordem[b.tipo] || 0) || String(a.nome).localeCompare(String(b.nome)); });
@@ -5149,7 +5349,7 @@ var App = {
     $('btn-sync-lado').addEventListener('click', function () { App.sincronizar(); }); $('btn-sync-topo').addEventListener('click', function () { App.sincronizar(); });
     window.addEventListener('hashchange', function () { var h = location.hash.replace('#', ''); if (h && Telas[h] && h !== S.tela) App.ir(h); });
     document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape' && !$('folha').hidden) UI.fecharFolha(); });
-    S.filtros.carteira = ls('appfin.carteira') || 'tudo';
+    S.filtros.carteira = ls('appfin.carteira') || 'tudo'; S.filtros.conta = ls('appfin.conta') || '';
     var h = location.hash.replace('#', ''); S.tela = (h && Telas[h]) ? h : (ls('appfin.tela') && Telas[ls('appfin.tela')] ? ls('appfin.tela') : 'visao');
     S.planilhaId = Dados.planilhaId();
 
