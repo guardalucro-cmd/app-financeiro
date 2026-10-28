@@ -397,6 +397,15 @@ table.tabela{border-collapse:collapse;width:100%;font-size:14px}
   .fl-comp-cab>span:first-child{display:none}
   .fl-comp-linha>span:not(.fl-comp-nome){font-size:12.5px}
 }
+/* dinheiro comprometido (1.1.2) */
+.pj-sub{margin:18px 0 8px;font-size:13px;font-weight:600;letter-spacing:.02em;color:var(--muted);text-transform:uppercase}
+.pj-meses{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}
+.pj-mes{display:flex;flex-direction:column;gap:2px;min-width:0;padding:10px 12px;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--panel-2)}
+.pj-mes b{font-size:15px;color:var(--neg)}
+.pj-mes small{font-size:11.5px;line-height:1.35;overflow-wrap:anywhere}
+.pj-comp .item .tx b,.pj-comp .item .tx small{white-space:normal;overflow:visible}
+.pj-comp .item .vl{flex:0 0 auto;text-align:right}
+.pj-comp .item .vl small{display:block;font-size:11px;color:var(--muted);font-weight:400}
 /* === 33-telas-c.css === */
 /* ===== 33-telas-c.css: categorias (ct-), contas (cn-), configurações (cf-), agente (ag-) ===== */
 
@@ -517,7 +526,7 @@ body.ag-ativa #fab{display:none}
 <script>
 /* === 50-core.js === */
 /* ===== 50-core.js: estado global e utilidades puras (sem DOM) ===== */
-var APP_VERSAO = '1.1.1';
+var APP_VERSAO = '1.1.2';
 var S = {
   tela: 'visao', planilhaId: '', carregado: false, exemplo: false, erro: null, ultimaCarga: 0, pausaAte: 0,
   lancamentos: [], contas: [], plano: [], orcamento: [], previstos: [], fixas: [], regras: [], config: [], controle: [],
@@ -625,8 +634,10 @@ var Motor = (function () {
   }
   function manual(c) { return !!c && c.origem !== 'banco'; }
   function ehDivida(c) { return !!c && (c.tipo === 'cartao' || c.tipo === 'emprestimo'); }
-  /* parcela de compra no cartão: já está dentro da fatura, é só informação */
-  function dentroDaFatura(S, p) { if (p.origem !== 'parcela') return false; var c = contaDe(S, p.conta_id); return !!c && c.tipo === 'cartao'; }
+  function contaCaixa(c) { return !!c && (c.tipo === 'corrente' || c.tipo === 'poupanca' || c.tipo === 'dinheiro'); }
+  function ehFaturaPrev(p) { return p.origem === 'fatura' || p.origem === 'fatura_estimada'; }
+  /* previsto lançado num cartão (parcela, fixa ou avulso): entra na fatura, não sai do caixa no dia; o que sai do caixa é a fatura */
+  function dentroDaFatura(S, p) { if (ehFaturaPrev(p)) return false; var c = contaDe(S, p.conta_id); return !!c && c.tipo === 'cartao'; }
   function ativa(x) { return x.ativa !== 'nao'; }
   function pendente(p) { return p.status === 'pendente'; }
   function total(l) { return l.natureza === 'Receita' || l.natureza === 'Despesa'; }
@@ -662,6 +673,165 @@ var Motor = (function () {
       if (!g[k] || x > g[k].x || (x === g[k].x && l.data > g[k].l.data)) g[k] = { l: l, x: x, n: n };
     });
     return g;
+  }
+
+  function descricaoBase(d) { return String(d || '').replace(/\s*\(?\s*parcela\s*\d+\s*\/\s*\d+\s*\)?/i, '').replace(/\s*\d+\s*\/\s*\d+\s*$/, '').trim() || 'Parcela'; }
+  function pagamentoDeFatura(l) { return l.tipo === 'entrada' && (l.natureza === 'Fatura' || l.categoria_codigo === '6.01'); }
+
+  /* ---------- faturas do cartão ---------- */
+  /* dia de vencimento: o da conta; senão o da última fatura que veio do banco; senão 7 dias depois do fechamento */
+  function diaVencCartao(S, c) {
+    if (+c.dia_vencimento) return +c.dia_vencimento;
+    var dia = 0, ult = '';
+    (S.previstos || []).forEach(function (p) {
+      if (!p.data || !faturaRealDoCartao(S, c, p)) return;
+      if (p.data > ult) { ult = p.data; dia = diaDoMes(p.data); }
+    });
+    if (dia) return dia;
+    var df = +c.dia_fechamento; return df ? ((df + 6) % 28) + 1 : 10;
+  }
+  /* mês em que vence a fatura de um lançamento do cartão. O banco manda pronto (fatura_mes = mês do vencimento).
+     Sem ele: a compra depois do fechamento vai para o ciclo seguinte; vence no mesmo mês do fechamento se o vencimento é depois dele, senão no mês seguinte */
+  function mesDaFatura(c, l) {
+    if (l.fatura_mes) return l.fatura_mes;
+    var df = +c.dia_fechamento || 0, dv = +c.dia_vencimento || 0, m = mesDe(l.data);
+    var fecha = df && diaDoMes(l.data) > df ? addMeses(m, 1) : m;
+    return df && dv > df ? fecha : addMeses(fecha, 1);
+  }
+  function vencDaFatura(S, c, mes) { return dataNoMes(mes, diaVencCartao(S, c)); }
+  /* fatura que veio do banco (ou foi lançada): ligada ao cartão pelo recorrencia_id ou, nas antigas, pelo nome na descrição */
+  function faturaRealDoCartao(S, c, p) {
+    if (p.origem !== 'fatura') return false;
+    if (p.recorrencia_id) return p.recorrencia_id === c.id;
+    var d = fold(p.descricao), pre = 'fatura ' + fold(c.nome);
+    return d === pre || d.indexOf(pre + ' ') === 0;
+  }
+  function pagadoraDe(S, c) {
+    var cs = (S.contas || []).filter(function (x) { return ativa(x) && contaCaixa(x); });
+    var mesma = cs.filter(function (x) { return (x.carteira || 'PF') === (c.carteira || 'PF'); });
+    var pref = function (l) { return l.filter(function (x) { return x.tipo === 'corrente'; })[0] || l[0]; };
+    return pref(mesma) || pref(cs) || null;
+  }
+  /* faturas do cartão a partir de hoje: real do banco quando existe, senão estimada pelas compras, parcelas e fixas no cartão, menos o que já foi pago adiantado */
+  function faturasDoCartao(S, c, hojeISO, ateISO) {
+    var porMes = {}, pagamentos = [], lanc = (S.lancamentos || []).filter(function (l) { return l.conta_id === c.id; });
+    function soma(m, v) { porMes[m] = arred((porMes[m] || 0) + v); }
+    lanc.forEach(function (l) {
+      if (pagamentoDeFatura(l)) { pagamentos.push(l); return; }
+      soma(mesDaFatura(c, l), l.tipo === 'saida' ? val(l) : -val(l));
+    });
+    /* parcelas que o banco ainda não mandou */
+    var grupos = ultimasParcelas(lanc);
+    Object.keys(grupos).forEach(function (k) { var g = grupos[k]; for (var i = g.x + 1; i <= g.n; i++) soma(addMeses(mesDaFatura(c, g.l), i - g.x), val(g.l)); });
+    /* fixas no cartão dos próximos meses e previstos avulsos no cartão */
+    var existe = {};
+    (S.previstos || []).forEach(function (p) { if (p.recorrencia_id) existe[p.recorrencia_id + '|' + p.data] = true; });
+    (S.fixas || []).filter(ativa).forEach(function (f) {
+      if (f.conta_id !== c.id || (f.tipo || 'saida') !== 'saida') return;
+      for (var m = addMeses(mesDe(hojeISO), 1); m <= mesDe(ateISO); m = addMeses(m, 1)) {
+        var d = dataNoMes(m, f.dia);
+        if ((f.termina_em && d > f.termina_em) || existe[f.id + '|' + d]) continue;
+        soma(mesDaFatura(c, { data: d }), val(f));
+      }
+    });
+    (S.previstos || []).forEach(function (p) {
+      if (p.conta_id !== c.id || !pendente(p) || p._virtual || p.origem === 'parcela' || p.data < hojeISO) return;
+      soma(mesDaFatura(c, { data: p.data }), p.tipo === 'entrada' ? -val(p) : val(p));
+    });
+    var reais = (S.previstos || []).filter(function (p) { return faturaRealDoCartao(S, c, p); });
+    var out = [], usadas = {};
+    Object.keys(porMes).sort().forEach(function (m) {
+      var due = vencDaFatura(S, c, m);
+      if (due < hojeISO || due > ateISO) return;
+      var real = reais.filter(function (p) { return mesDe(p.data) === mesDe(due); })[0];
+      if (real) { usadas[real.id] = true; if (pendente(real)) out.push({ mes: m, data: real.data, valor: arred(val(real)), estimada: false, previsto: real }); return; }
+      var ini = vencDaFatura(S, c, addMeses(m, -1)), pago = 0;
+      var realAnt = reais.filter(function (p) { return mesDe(p.data) === mesDe(ini); })[0];
+      if (realAnt && realAnt.data > ini) ini = realAnt.data;
+      pagamentos.forEach(function (l) { if (l.data > ini && l.data <= due) pago += val(l); });
+      var v = arred(porMes[m] - pago);
+      if (v >= 0.01) out.push({ mes: m, data: due, valor: v, bruto: porMes[m], pago: arred(pago), estimada: true });
+    });
+    reais.forEach(function (p) { if (!usadas[p.id] && pendente(p) && p.data >= hojeISO && p.data <= ateISO) out.push({ mes: '', data: p.data, valor: arred(val(p)), estimada: false, previsto: p }); });
+    out.sort(porData);
+    return out;
+  }
+  function faturasEstimadas(S, ateISO, hojeISO) {
+    var out = [], ids = {};
+    (S.previstos || []).forEach(function (p) { ids[p.id] = true; });
+    (S.contas || []).filter(function (c) { return ativa(c) && c.tipo === 'cartao'; }).forEach(function (c) {
+      var pag = pagadoraDe(S, c);
+      faturasDoCartao(S, c, hojeISO, ateISO).forEach(function (f) {
+        if (!f.estimada) return;
+        var id = 'E' + c.id + '-' + f.mes;
+        if (ids[id]) return;
+        out.push({
+          id: id, data: f.data, descricao: 'Fatura ' + c.nome + ' (estimada)', valor: f.valor, tipo: 'saida', conta_id: pag ? pag.id : '',
+          categoria_codigo: '6.01', origem: 'fatura_estimada', status: 'pendente', lancamento_id: '', recorrencia_id: c.id, atualizado_em: stamp(),
+          carteira: c.carteira || 'PF', _virtual: true, _estimada: true, _cartao: c.id, _faturaMes: f.mes
+        });
+      });
+    });
+    return out;
+  }
+
+  /* ---------- saídas que se repetem no extrato das contas de dinheiro ---------- */
+  function chaveRec(d) { return fold(d).replace(/\d+/g, ' ').replace(/[^a-z ]+/g, ' ').replace(/\s+/g, ' ').trim(); }
+  var DIVIDA_RE = /(emprestimo|financiamento|consorcio|financeira|\bcfi\b|credito pessoal|parcelamento)/;
+  /* padrão = as saídas do último mês completo em que apareceu; exige 2 meses diferentes nos últimos 3 meses mais o atual e média de R$ 30 ou mais */
+  function padroesRecorrentes(S, hojeISO) {
+    if (String(cfgDe(S, 'prever_recorrentes', 'sim')) === 'nao') return [];
+    var mesH = mesDe(hojeISO), ini = primeiroDia(addMeses(mesH, -3)), grupos = {};
+    (S.lancamentos || []).forEach(function (l) {
+      if (l.tipo !== 'saida' || !l.data || l.data < ini || l.data > hojeISO) return;
+      var c = contaDe(S, l.conta_id); if (!contaCaixa(c) || !ativa(c)) return;
+      if (l.natureza === 'Transferência própria' || l.natureza === 'Investimento') return;
+      var k = chaveRec(l.descricao); if (!k || k.indexOf('fatura') >= 0) return;
+      var gk = c.id + '|' + k;
+      (grupos[gk] = grupos[gk] || { conta: c, chave: k, itens: [] }).itens.push(l);
+    });
+    var fixasK = (S.fixas || []).filter(ativa).map(function (f) { return chaveRec(f.nome); }).filter(Boolean);
+    var out = [];
+    Object.keys(grupos).forEach(function (gk) {
+      var g = grupos[gk], porMes = {};
+      g.itens.forEach(function (l) { (porMes[mesDe(l.data)] = porMes[mesDe(l.data)] || []).push(l); });
+      var meses = Object.keys(porMes).sort(), antes = meses.filter(function (m) { return m < mesH; });
+      if (meses.length < 2 || !antes.length) return;
+      var ref = antes[antes.length - 1];
+      if ((porMes[mesH] || []).length >= porMes[ref].length) ref = mesH;
+      var padrao = porMes[ref].slice().sort(porData);
+      var media = padrao.reduce(function (t, l) { return t + val(l); }, 0) / padrao.length;
+      if (media < 30) return;
+      if (fixasK.some(function (f) { return f === g.chave || g.chave.indexOf(f) >= 0 || f.indexOf(g.chave) >= 0; })) return;
+      var ult = padrao[padrao.length - 1];
+      out.push({
+        id: gk, conta: g.conta, chave: g.chave, descricao: ult.descricao, categoria_codigo: ult.categoria_codigo || '', padrao: padrao,
+        jaNoMes: (porMes[mesH] || []).length, porMes: arred(padrao.reduce(function (t, l) { return t + val(l); }, 0)),
+        divida: ult.categoria_codigo === '4.03' || DIVIDA_RE.test(g.chave)
+      });
+    });
+    return out;
+  }
+  function recorrentesDetectadas(S, ateISO, hojeISO) {
+    var existe = {}, out = [];
+    (S.previstos || []).forEach(function (p) { if (p.recorrencia_id) existe[p.recorrencia_id + '|' + p.data] = true; });
+    padroesRecorrentes(S, hojeISO).forEach(function (r) {
+      for (var m = mesDe(hojeISO); m <= mesDe(ateISO); m = addMeses(m, 1)) {
+        var pula = m === mesDe(hojeISO) ? r.jaNoMes : 0;
+        r.padrao.forEach(function (l, i) {
+          if (i < pula) return;
+          var data = dataNoMes(m, diaDoMes(l.data)), rid = 'auto|' + r.id + '|' + i;
+          if (data < hojeISO || data > ateISO || existe[rid + '|' + data]) return;
+          existe[rid + '|' + data] = true;
+          out.push({
+            id: novoId('P'), data: data, descricao: l.descricao, valor: arred(val(l)), tipo: 'saida', conta_id: r.conta.id,
+            categoria_codigo: l.categoria_codigo || '', origem: 'recorrente', status: 'pendente', lancamento_id: '', recorrencia_id: rid,
+            atualizado_em: stamp(), carteira: r.conta.carteira || 'PF', _virtual: true, _recorrente: true
+          });
+        });
+      }
+    });
+    return out;
   }
 
   function rotuloSemana(ini, fim) {
@@ -700,7 +870,7 @@ var Motor = (function () {
   ];
   function regexPalavra(p) { var e = p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); return new RegExp('(?<![a-z0-9])' + e + '(?![a-z0-9])'); }
 
-  return {
+  var api = {
 
     /* saldos atuais: por conta, total das contas de dinheiro (sem cartão) e por carteira */
     saldos: function (S, hojeISO) {
@@ -835,7 +1005,7 @@ var Motor = (function () {
       var saldoInicial = arred(contas.reduce(function (t, c) { return t + saldoConta(S, c, hojeISO).saldo; }, 0));
       var fim = addDays(hojeISO, dias);
       var itens = [];
-      filtrar(S, S.previstos || []).forEach(function (p) {
+      filtrar(S, api.previstosCompletos(S, fim, hojeISO)).forEach(function (p) {
         if (!pendente(p) || dentroDaFatura(S, p)) return;
         var aj = cen[p.id];
         if (aj && aj.removido) return;
@@ -870,7 +1040,7 @@ var Motor = (function () {
       var hojeISO = op.hojeISO || hoje();
       var ate = typeof op.ate === 'number' ? addDays(hojeISO, op.ate) : (op.ate || addDays(hojeISO, 7));
       var r = { atrasados: [], hoje: [], proximos: [], aReceber: [], naFatura: [], totalAPagar: 0, totalAReceber: 0, totalNaFatura: 0, ate: ate };
-      filtrar(S, S.previstos || []).filter(function (p) { return pendente(p) && p.data <= ate; }).sort(porData).forEach(function (p) {
+      filtrar(S, api.previstosCompletos(S, ate, hojeISO)).filter(function (p) { return pendente(p) && p.data <= ate; }).sort(porData).forEach(function (p) {
         if (dentroDaFatura(S, p)) { if (p.data >= hojeISO) { r.naFatura.push(p); r.totalNaFatura += val(p); } return; }
         if (p.tipo === 'entrada') { r.aReceber.push(p); r.totalAReceber += val(p); return; }
         if (p.data < hojeISO) r.atrasados.push(p); else if (p.data === hojeISO) r.hoje.push(p); else r.proximos.push(p);
@@ -1084,8 +1254,71 @@ var Motor = (function () {
       });
       out.sort(function (a, b) { return b.valor - a.valor; });
       return out;
+    },
+
+    /* previstos gravados + os que as fixas e parcelas geram + faturas estimadas + saídas que se repetem no extrato; idempotente */
+    previstosCompletos: function (S, ateISO, hojeISO) {
+      hojeISO = hojeISO || hoje(); ateISO = ateISO || addDays(hojeISO, 30);
+      var base = S.previstos || [];
+      var ger = api.gerarPrevistos(S, ateISO, hojeISO).map(function (p) { p._virtual = true; return p; });
+      var v = Object.assign({}, S, { previstos: base.concat(ger) });
+      var rec = recorrentesDetectadas(v, ateISO, hojeISO);
+      var est = faturasEstimadas(v, ateISO, hojeISO);
+      return base.concat(ger, rec, est);
+    },
+
+    faturasEstimadas: function (S, ateISO, hojeISO) { hojeISO = hojeISO || hoje(); return faturasEstimadas(S, ateISO || addDays(hojeISO, 60), hojeISO); },
+    recorrentes: function (S, hojeISO) { return padroesRecorrentes(S, hojeISO || hoje()); },
+
+    /* dinheiro comprometido: cartões (usado e faturas por vir), compras parceladas, empréstimos e financiamentos */
+    comprometido: function (S, hojeISO, meses) {
+      hojeISO = hojeISO || hoje(); meses = meses || 6;
+      var ate = addDays(hojeISO, 400), cartoes = [], parc = {}, emprestimos = [], porMes = {};
+      var mes0 = mesDe(hojeISO);
+      function noMes(m, campo, v) { if (m < mes0 || m > addMeses(mes0, meses - 1)) return; var x = porMes[m] = porMes[m] || { mes: m, faturas: 0, dividas: 0, total: 0 }; x[campo] = arred(x[campo] + v); x.total = arred(x.total + v); }
+      filtrar(S, S.contas || []).filter(ativa).forEach(function (c) {
+        if (c.tipo === 'emprestimo') { emprestimos.push({ conta: c, saldo: arred(Math.abs(saldoConta(S, c, hojeISO).saldo)) }); return; }
+        if (c.tipo !== 'cartao') return;
+        var fats = faturasDoCartao(S, c, hojeISO, ate);
+        fats.forEach(function (f) { noMes(mesDe(f.data), 'faturas', f.valor); });
+        cartoes.push({ conta: c, usado: arred(Math.abs(saldoConta(S, c, hojeISO).saldo)), faturas: fats, proxima: fats[0] || null, totalFaturas: arred(fats.reduce(function (t, f) { return t + f.valor; }, 0)) });
+        var lanc = (S.lancamentos || []).filter(function (l) { return l.conta_id === c.id; });
+        function junta(l, x, n, mesFat) {
+          var venc = vencDaFatura(S, c, mesFat); if (venc < hojeISO) return;
+          var k = c.id + '|' + chaveParcela(l.descricao) + '|' + n;
+          var g = parc[k] = parc[k] || { conta: c, descricao: descricaoBase(l.descricao), valorParcela: arred(val(l)), total: n, numeros: {}, linhas: 0, restante: 0, termina: '' };
+          g.numeros[x] = true; g.linhas++; g.restante = arred(g.restante + val(l)); if (venc > g.termina) g.termina = venc;
+          if (x > (g.maiorX || 0)) { g.maiorX = x; g.valorParcela = arred(val(l)); }
+        }
+        lanc.forEach(function (l) {
+          if (l.tipo !== 'saida') return;
+          var m = String(l.parcela || '').match(/^\s*(\d+)\s*\/\s*(\d+)\s*$/); if (!m || +m[2] < 2) return;
+          junta(l, +m[1], +m[2], mesDaFatura(c, l));
+        });
+        var g = ultimasParcelas(lanc.filter(function (l) { return l.tipo === 'saida'; }));
+        Object.keys(g).forEach(function (k) { var u = g[k]; for (var i = u.x + 1; i <= u.n; i++) junta(u.l, i, u.n, addMeses(mesDaFatura(c, u.l), i - u.x)); });
+      });
+      var parcelados = Object.keys(parc).map(function (k) {
+        var g = parc[k], faltam = Object.keys(g.numeros).length, compras = Math.max(1, Math.round(g.linhas / Math.max(1, faltam)));
+        return { conta: g.conta, descricao: g.descricao, valorParcela: g.valorParcela, total: g.total, faltam: faltam, compras: compras, porMes: arred(g.valorParcela * compras), restante: g.restante, termina: g.termina };
+      }).sort(function (a, b) { return b.restante - a.restante; });
+      var dividasMensais = padroesRecorrentes(S, hojeISO).filter(function (r) { return r.divida && filtrar(S, [{ conta_id: r.conta.id, carteira: r.conta.carteira }]).length; }).map(function (r) {
+        var resto = r.padrao.slice(r.jaNoMes).reduce(function (t, l) { return t + (dataNoMes(mes0, diaDoMes(l.data)) >= hojeISO ? val(l) : 0); }, 0);
+        for (var i = 0; i < meses; i++) noMes(addMeses(mes0, i), 'dividas', i === 0 ? arred(resto) : r.porMes);
+        return { descricao: r.descricao, conta: r.conta, porMes: r.porMes, vezes: r.padrao.length, dia: diaDoMes(r.padrao[0].data) };
+      });
+      var totCart = arred(cartoes.reduce(function (t, c) { return t + c.usado; }, 0));
+      var totEmp = arred(emprestimos.reduce(function (t, e) { return t + e.saldo; }, 0));
+      var lista = [];
+      for (var i = 0; i < meses; i++) { var m = addMeses(mes0, i); lista.push(porMes[m] || { mes: m, faturas: 0, dividas: 0, total: 0 }); }
+      return {
+        cartoes: cartoes, parcelados: parcelados, emprestimos: emprestimos, dividasMensais: dividasMensais, porMes: lista,
+        totalCartoes: totCart, totalEmprestimos: totEmp, totalParcelado: arred(parcelados.reduce(function (t, p) { return t + p.restante; }, 0)),
+        total: arred(totCart + totEmp)
+      };
     }
   };
+  return api;
 })();
 /* === 52-classificar.js === */
 /* ===== 52-classificar.js: limpeza de descrição, classificação e mapeamento da Belvo ===== */
@@ -1282,7 +1515,7 @@ var Classificar = (function () {
         id: 'B' + s(bill.bill_id), data: due, descricao: ('Fatura ' + (cartao ? cartao.nome : 'cartão') + ' ' + s(bill.bill_name)).trim(),
         valor: arred(Math.abs(+bill.total_amount || 0)), tipo: 'saida', conta_id: corrente ? corrente.id : (cartao ? cartao.id : ''),
         categoria_codigo: '6.01', origem: 'fatura', status: (due >= hojeISO && pagamentos.length === 0) ? 'pendente' : 'pago',
-        lancamento_id: '', recorrencia_id: '', atualizado_em: stamp()
+        lancamento_id: '', recorrencia_id: cartao ? cartao.id : '', atualizado_em: stamp()
       };
     }
   };
@@ -1434,9 +1667,30 @@ var Dados = {
       var fatia = objs.slice(i, i + 100);
       fatia.forEach(function (o) { if (COLS[aba].indexOf('atualizado_em') >= 0 && !o.atualizado_em) o.atualizado_em = stamp(); });
       var p = await Dados.chamar('append_values', { spreadsheetId: Dados.planilhaId(), range: aba + '!A1', values: fatia.map(function (o) { return objParaLinha(aba, o); }) });
-      var fim = Dados._linhaDeResposta(p);
-      if (fim) { var ini = fim - fatia.length + 1; fatia.forEach(function (o, k) { o._linha = ini + k; }); }
+      /* updatedRange vem como Aba!A102:O151: o número lido é a PRIMEIRA linha gravada */
+      var ini = Dados._linhaDeResposta(p);
+      if (ini) fatia.forEach(function (o, k) { o._linha = ini + k; });
+      else { fatia.forEach(function (o) { delete o._linha; }); await Dados._ler(true, true); }
     }
+  },
+  /* conserta o estrago do defeito até a 1.1.1: linhas com o mesmo id (uma gravada por cima de outra).
+     Fica a versão revisada ou classificada; as outras saem. Devolve quantas saíram. */
+  repararDuplicados: async function (aba) {
+    var lista = S[CHAVE[aba]] || [], grupos = {}, apagar = [];
+    lista.forEach(function (o) { if (o.id && o._linha) (grupos[o.id] = grupos[o.id] || []).push(o); });
+    Object.keys(grupos).forEach(function (id) {
+      var g = grupos[id]; if (g.length < 2) return;
+      var nota = function (o) { return (o.revisado === 'sim' ? 4 : 0) + (o.categoria_codigo && o.categoria_codigo !== '9' ? 2 : 0) + (o.status && o.status !== 'pendente' ? 1 : 0); };
+      g.sort(function (a, b) { return nota(b) - nota(a) || String(b.atualizado_em || '').localeCompare(String(a.atualizado_em || '')); });
+      g.slice(1).forEach(function (o) { apagar.push(o); });
+    });
+    if (!apagar.length) return 0;
+    apagar.sort(function (a, b) { return b._linha - a._linha; });
+    await Dados.chamar('update_spreadsheet', { spreadsheetId: Dados.planilhaId(), requests: apagar.map(function (o) {
+      return { deleteDimension: { range: { sheetId: SHEET_ID[aba], dimension: 'ROWS', startIndex: o._linha - 1, endIndex: o._linha } } };
+    }) });
+    await Dados._ler(true, true);
+    return apagar.length;
   },
   atualizar: async function (aba, obj) {
     if (COLS[aba].indexOf('atualizado_em') >= 0) obj.atualizado_em = stamp();
@@ -1624,8 +1878,15 @@ var Belvo = {
     for (var a = 0; a < alteradas.length; a++) await Dados.atualizar('Contas', alteradas[a]);
     App.render();
 
+    // 3b. conserta linhas repetidas do defeito da gravação em lote (até a 1.1.1) e, se houve, relê a janela inteira para trazer de volta o que foi sobrescrito
+    var reparadas = 0;
+    try {
+      for (var ab = 0; ab < 3; ab++) reparadas += await Dados.repararDuplicados(['Lancamentos', 'Previstos', 'Contas'][ab]);
+      if (reparadas) resultado.avisos.push('Consertei ' + reparadas + ' linha' + (reparadas === 1 ? '' : 's') + ' repetida' + (reparadas === 1 ? '' : 's') + ' na planilha e busquei de novo os lançamentos dos últimos meses.');
+    } catch (e) { if (e && e.code === 'cancelado') throw e; console.error('reparar', e); }
+
     // 4. transações
-    var ultima = ctl('ultima_data_banco', '');
+    var ultima = reparadas ? '' : ctl('ultima_data_banco', '');
     var meses = +(opts.meses || cfg('meses_primeira_carga', 3)) || 3;
     var desde = retomada ? retomada.desde : (ultima ? addDays(ultima, -3) : addDays(hojeISO, -30 * meses));
     var existentes = {}; S.lancamentos.forEach(function (l) { existentes[l.id] = true; });
@@ -1875,6 +2136,11 @@ var Exemplo = {
     brutos.sort(function (a, b2) { return a.data < b2.data ? -1 : a.data > b2.data ? 1 : 0; });
     var lancamentos = brutos.map(function (l, idx) { l.id = 'EX' + (idx + 1); l._linha = idx + 2; return l; });
     var parcela5 = lancamentos.filter(function (l) { return l.parcela === '5/10'; })[0];
+    /* fatura aberta do cartão de exemplo = compras que vencem no mês que vem; o usado no cartão é ela mais as parcelas por vir */
+    var aberta = 0;
+    lancamentos.forEach(function (l) { if (l.conta_id === 'C_PF_CARTAO' && l.fatura_mes === addMeses(mesAtual, 1)) aberta += l.tipo === 'saida' ? l.valor : -l.valor; });
+    aberta = arred(aberta);
+    contas.filter(function (c) { return c.id === 'C_PF_CARTAO'; })[0].saldo = arred(aberta + (parcela5 ? parcela5.valor * 5 : 0));
 
     /* ---------- fixas ---------- */
     var fixas = [
@@ -1890,7 +2156,7 @@ var Exemplo = {
     var previstos = fixas.map(function (f, idx) {
       return { id: 'P' + (idx + 1), data: proxData(+f.dia), descricao: f.nome, valor: f.valor, tipo: f.tipo, conta_id: f.conta_id, categoria_codigo: f.categoria_codigo, origem: 'fixa', status: 'pendente', lancamento_id: '', recorrencia_id: f.id, atualizado_em: stamp() };
     });
-    previstos.push({ id: 'P7', data: proxData(9), descricao: 'Fatura Nubank cartão', valor: 1840.55, tipo: 'saida', conta_id: 'C_PF_CC', categoria_codigo: '6.01', origem: 'fatura', status: 'pendente', lancamento_id: '', recorrencia_id: '', atualizado_em: stamp() });
+    previstos.push({ id: 'P7', data: proxData(9), descricao: 'Fatura Nubank cartão', valor: aberta, tipo: 'saida', conta_id: 'C_PF_CC', categoria_codigo: '6.01', origem: 'fatura', status: 'pendente', lancamento_id: '', recorrencia_id: '', atualizado_em: stamp() });
     previstos.push({ id: 'P8', data: addDays(hojeISO, 4), descricao: 'Recebimento Cliente Alfa', valor: 3150, tipo: 'entrada', conta_id: 'C_PJ_CC', categoria_codigo: '1.03', origem: 'manual', status: 'pendente', lancamento_id: '', recorrencia_id: '', atualizado_em: stamp() });
     previstos.push({ id: 'P9', data: addDays(hojeISO, 11), descricao: 'Recebimento Cliente Beta', valor: 2400, tipo: 'entrada', conta_id: 'C_PJ_CC', categoria_codigo: '1.03', origem: 'manual', status: 'pendente', lancamento_id: '', recorrencia_id: '', atualizado_em: stamp() });
     previstos.push({ id: 'P10', data: proxData(17), descricao: 'Loja de Eletrônicos 6/10', valor: 189.90, tipo: 'saida', conta_id: 'C_PF_CARTAO', categoria_codigo: '3.04', origem: 'parcela', status: 'pendente', lancamento_id: '', recorrencia_id: parcela5.id, atualizado_em: stamp() });
@@ -2449,13 +2715,13 @@ var Agente = {
     // PRÓXIMOS DIAS (lista, até 40)
     var ate = addDays(hojeISO, dias);
     var v = Agente._tenta('vencimentos', [S, { ate: ate, hojeISO: hojeISO }], { atrasados: [], hoje: [], proximos: [], aReceber: [], naFatura: [], totalAPagar: 0, totalAReceber: 0, totalNaFatura: 0 });
-    function linhaPrev(p, rotulo) { return dm(p.data) + ' | ' + String(p.descricao || '').slice(0, 40) + ' | ' + fmtMoeda(p.valor) + ' | ' + (p.tipo === 'entrada' ? 'entra' : 'sai') + ' | ' + nomeConta(p.conta_id) + (rotulo ? ' | ' + rotulo : ''); }
+    function linhaPrev(p, rotulo) { return dm(p.data) + ' | ' + String(p.descricao || '').slice(0, 40) + ' | ' + fmtMoeda(p.valor) + ' | ' + (p.tipo === 'entrada' ? 'entra' : 'sai') + ' | ' + nomeConta(p.conta_id) + (p._estimada ? ' | fatura estimada' : (p._recorrente ? ' | repete todo mês no extrato' : '')) + (rotulo ? ' | ' + rotulo : ''); }
     var prevLinhas = []
       .concat((v.atrasados || []).map(function (p) { return linhaPrev(p, 'ATRASADO'); }))
       .concat((v.hoje || []).map(function (p) { return linhaPrev(p, 'HOJE'); }))
       .concat((v.proximos || []).map(function (p) { return linhaPrev(p, ''); }))
       .concat((v.aReceber || []).map(function (p) { return linhaPrev(p, 'a receber'); }))
-      .concat((v.naFatura || []).map(function (p) { return linhaPrev(p, 'parcela já dentro da fatura, não é conta à parte'); }))
+      .concat((v.naFatura || []).map(function (p) { return linhaPrev(p, 'no cartão, já dentro da fatura, não sai do caixa'); }))
       .slice(0, 40);
     prevLinhas.unshift('A pagar até ' + dm(ate) + ': ' + fmtMoeda(v.totalAPagar) + ' (' + ((v.atrasados || []).length) + ' atrasados, ' + ((v.hoje || []).length) + ' hoje, ' + ((v.proximos || []).length) + ' próximos). A receber: ' + fmtMoeda(v.totalAReceber) + '.' + ((v.naFatura || []).length ? ' Parcelas no cartão já dentro da fatura (só informação): ' + fmtMoeda(v.totalNaFatura) + '.' : ''));
     if (prevLinhas.length === 1) prevLinhas.push('Nenhum previsto pendente no período.');
@@ -2472,6 +2738,17 @@ var Agente = {
       parcLinhas.push('Compromisso total que ainda vem: ' + fmtMoeda(comp) + '.');
     }
     secao('PARCELAS EM ABERTO', parcLinhas.length ? parcLinhas : ['Sem parcelas em aberto.'], 4);
+
+    // DINHEIRO COMPROMETIDO (lista)
+    var cp = Agente._tenta('comprometido', [S, hojeISO, 6], null);
+    if (cp) {
+      var cpLinhas = ['Total comprometido: ' + fmtMoeda(cp.total) + ' (cartões usados ' + fmtMoeda(cp.totalCartoes) + ', empréstimos ' + fmtMoeda(cp.totalEmprestimos) + '; compras parceladas por vencer ' + fmtMoeda(cp.totalParcelado) + ', dentro dos cartões). Compra no cartão não sai do caixa no dia; sai a fatura no vencimento.'];
+      cp.cartoes.forEach(function (k) { cpLinhas.push(k.conta.nome + ': usado ' + fmtMoeda(k.usado) + '; faturas ' + k.faturas.slice(0, 4).map(function (f) { return dm(f.data) + ' ' + fmtMoeda(f.valor) + (f.estimada ? ' (estimada)' : ''); }).join(', ')); });
+      cp.emprestimos.forEach(function (e) { cpLinhas.push(e.conta.nome + ': saldo devedor ' + fmtMoeda(e.saldo)); });
+      cp.dividasMensais.forEach(function (d) { cpLinhas.push(String(d.descricao).slice(0, 40) + ': ' + fmtMoeda(d.porMes) + ' por mês (financiamento ou empréstimo visto no extrato)'); });
+      cpLinhas.push('Prometido por mês: ' + cp.porMes.map(function (m) { return fmtMes(m.mes).slice(0, 3) + ' ' + fmtMoeda(m.total); }).join(', ') + '.');
+      secao('DINHEIRO COMPROMETIDO', cpLinhas, 3);
+    }
 
     // ASSINATURAS (lista)
     var ass = Agente._tenta('assinaturas', [S, mes], []);
@@ -3106,10 +3383,16 @@ var Telas = typeof Telas !== 'undefined' ? Telas : {};
 
       var resumo = tentar('resumoMes', function () { return Motor.resumoMes(S, mes); });
       var saldos = tentar('saldos', function () { return Motor.saldos(S, hj); });
+      var comp = tentar('comprometido', function () { return Motor.comprometido(S, hj, 2); });
       var pode = typeof Motor.podeGastarPorDia === 'function' ? tentar('podeGastar', function () { return Motor.podeGastarPorDia(S, mes, hj); }) : null;
 
       var tiles = [];
-      tiles.push({ rotulo: 'Saldo das contas', valor: saldos ? fmtMoeda(saldos.total) : '-', tom: saldos && saldos.total < 0 ? 'neg' : 'neutro', delta: saldos && saldos.dividas ? 'Cartões e empréstimos à parte: ' + fmtMoeda(saldos.dividas) + ' devidos' : 'Sem contar cartões e empréstimos' });
+      tiles.push({ rotulo: 'Saldo das contas', valor: saldos ? fmtMoeda(saldos.total) : '-', tom: saldos && saldos.total < 0 ? 'neg' : 'neutro', delta: 'Sem contar cartões e empréstimos' });
+      if (comp && comp.total > 0) {
+        var prox = comp.cartoes.map(function (k) { return k.proxima; }).filter(Boolean).sort(function (a, b) { return a.data < b.data ? -1 : 1; })[0];
+        var somaProx = prox ? arred(comp.cartoes.reduce(function (t, k) { return t + (k.proxima && k.proxima.data === prox.data ? k.proxima.valor : 0); }, 0)) : 0;
+        tiles.push({ rotulo: 'Comprometido', valor: fmtMoeda(comp.total), tom: 'neg', delta: prox ? 'Faturas em ' + fmtDataCurta(prox.data) + ': ' + fmtMoeda(somaProx) : 'Cartões e empréstimos' });
+      }
       if (resumo) {
         tiles.push({ rotulo: 'Entrou no mês', valor: fmtMoeda(resumo.entrou), tom: 'pos', delta: 'Mês passado: ' + fmtMoeda(resumo.anterior.entrou) });
         tiles.push({ rotulo: 'Saiu no mês', valor: fmtMoeda(resumo.saiu), tom: 'neutro', delta: 'Mês passado: ' + fmtMoeda(resumo.anterior.saiu) });
@@ -3859,12 +4142,83 @@ var Telas = typeof Telas !== 'undefined' ? Telas : {};
   }
   function simAtiva() { return sim.extra > 0 || sim.corte > 0; }
 
-  /* S com os previstos que as fixas e parcelas ainda vão gerar (copias marcadas como virtuais) */
+  /* S com tudo o que vai sair ou entrar: fixas, parcelas, faturas estimadas e saídas que se repetem no extrato (cópias virtuais) */
   function visaoComGerados(h, dias) {
-    var gerados = Motor.gerarPrevistos(S, addDays(h, dias), h).map(function (p) { p._virtual = true; return p; });
+    var todos = Motor.previstosCompletos(S, addDays(h, dias), h);
     var v = Object.assign({}, S);
-    v.previstos = S.previstos.concat(gerados);
-    return { S: v, gerados: gerados };
+    v.previstos = todos;
+    return { S: v, gerados: todos.filter(function (p) { return p._virtual; }) };
+  }
+
+  function rotuloVirtual(p) {
+    if (p._estimada) return ' · estimada pelas compras no cartão';
+    if (p._recorrente) return ' · repete todo mês no extrato';
+    return p._virtual ? ' · sugerido, ainda não gravado' : '';
+  }
+
+  /* ---------- dinheiro comprometido ---------- */
+  function mesCurto(iso) { var m = fmtMes(mesDe(iso)); return m.slice(0, 3) + '/' + String(iso).slice(2, 4); }
+  function cartaoComprometido(h) {
+    var c;
+    try { c = Motor.comprometido(S, h, 6); } catch (e) { console.error('comprometido', e); return UI.cartao({ titulo: 'Dinheiro comprometido', corpo: UI.aviso({ tom: 'warn', texto: 'Não consegui calcular isto agora.' }) }); }
+    if (!c.cartoes.length && !c.emprestimos.length && !c.dividasMensais.length) {
+      return UI.cartao({ titulo: 'Dinheiro comprometido', corpo: UI.el('p', { class: 'muted', text: 'Nenhum cartão, parcelamento ou empréstimo por aqui.' }) });
+    }
+    var corpo = [];
+    corpo.push(UI.tiles([
+      { rotulo: 'Comprometido', valor: fmtMoeda(c.total), tom: c.total > 0 ? 'neg' : 'neutro', delta: 'cartões e empréstimos' },
+      { rotulo: 'Usado nos cartões', valor: fmtMoeda(c.totalCartoes), tom: 'neutro', delta: 'segundo o banco' },
+      { rotulo: 'Parceladas', valor: fmtMoeda(c.totalParcelado), tom: 'neutro', delta: 'parcelas por vencer' },
+      { rotulo: 'Empréstimos', valor: fmtMoeda(c.totalEmprestimos), tom: 'neutro', delta: 'saldo devedor' }
+    ]));
+
+    corpo.push(UI.el('h3', { class: 'pj-sub', text: 'Quanto já está prometido por mês' }));
+    corpo.push(UI.el('div', { class: 'pj-meses' }, c.porMes.map(function (m) {
+      return UI.el('div', { class: 'pj-mes' },
+        UI.el('span', { class: 'muted', text: fmtMes(m.mes).slice(0, 3) + '/' + m.mes.slice(2, 4) }),
+        UI.el('b', { class: 'num', text: fmtMoeda(m.total) }),
+        UI.el('small', { class: 'muted', text: (m.faturas ? 'faturas ' + fmtMoeda(m.faturas) : 'sem fatura') + (m.dividas ? ' · parcelas ' + fmtMoeda(m.dividas) : '') }));
+    })));
+
+    if (c.cartoes.length) {
+      corpo.push(UI.el('h3', { class: 'pj-sub', text: 'Cartões' }));
+      corpo.push(UI.el('div', { class: 'lista pj-comp' }, c.cartoes.map(function (k) {
+        var p = k.proxima;
+        var depois = k.faturas.slice(1, 4).map(function (f) { return mesCurto(f.data) + ' ' + fmtMoeda(f.valor); }).join(' · ');
+        return UI.item({
+          icone: 'cartao', titulo: k.conta.nome,
+          sub: (p ? 'Próxima fatura ' + fmtData(p.data).slice(0, 5) + ': ' + fmtMoeda(p.valor) + (p.estimada ? ' (estimada)' : '') : 'Sem fatura por vir') + (depois ? ' · depois: ' + depois : ''),
+          valor: fmtMoeda(k.usado), tomValor: 'neg', subValor: 'usado'
+        });
+      })));
+    }
+
+    if (c.parcelados.length) {
+      corpo.push(UI.el('h3', { class: 'pj-sub', text: 'Compras parceladas' }));
+      corpo.push(UI.el('div', { class: 'lista pj-comp' }, c.parcelados.slice(0, 12).map(function (p) {
+        return UI.item({
+          icone: 'cartao', titulo: p.descricao + (p.compras > 1 ? ' (' + p.compras + ' compras)' : ''),
+          sub: 'Faltam ' + p.faltam + ' de ' + p.total + ' · ' + fmtMoeda(p.porMes) + ' por mês · até ' + mesCurto(p.termina) + ' · ' + p.conta.nome,
+          valor: fmtMoeda(p.restante), tomValor: 'neg', subValor: 'falta pagar'
+        });
+      })));
+      if (c.parcelados.length > 12) corpo.push(UI.el('p', { class: 'muted', text: 'E mais ' + (c.parcelados.length - 12) + ' compras parceladas menores.' }));
+    }
+
+    if (c.emprestimos.length || c.dividasMensais.length) {
+      corpo.push(UI.el('h3', { class: 'pj-sub', text: 'Empréstimos e financiamentos' }));
+      var itens = c.emprestimos.map(function (e) {
+        return UI.item({ icone: 'alerta', titulo: e.conta.nome, sub: 'Saldo devedor informado pelo banco', valor: fmtMoeda(e.saldo), tomValor: 'neg', subValor: 'devido' });
+      }).concat(c.dividasMensais.map(function (d) {
+        return UI.item({ icone: 'vencimentos', titulo: d.descricao, sub: 'Sai da ' + d.conta.nome + ' todo mês, perto do dia ' + d.dia + ' · já está na projeção', valor: fmtMoeda(d.porMes) + '/mês', tomValor: 'neg' });
+      }));
+      corpo.push(UI.el('div', { class: 'lista pj-comp' }, itens));
+    }
+
+    return UI.cartao({
+      titulo: 'Dinheiro comprometido', extra: UI.pilula('não sai do caixa hoje', 'info'), corpo: corpo,
+      rodape: 'Compras no cartão não saem do caixa no dia: o que sai é a fatura, no vencimento, e é ela que entra na projeção. As faturas estimadas usam as compras e parcelas que o banco já mandou, menos o que você pagou adiantado.'
+    });
   }
 
   function ehVariavel(p) { return p.tipo === 'saida' && String(p.categoria_codigo || '').charAt(0) === '3'; }
@@ -4051,7 +4405,7 @@ var Telas = typeof Telas !== 'undefined' ? Telas : {};
         { rotulo: 'Saldo hoje', valor: fmtMoeda(proj.saldoInicial), tom: proj.saldoInicial < 0 ? 'neg' : 'neutro', delta: 'contas de dinheiro' },
         { rotulo: 'Menor saldo', valor: fmtMoeda(proj.minimo.saldo), tom: proj.minimo.saldo < 0 ? 'danger' : (proj.minimo.saldo < proj.saldoInicial * 0.1 ? 'warn' : 'neutro'), delta: 'em ' + fmtData(proj.minimo.data).slice(0, 5) + ' (' + fmtDataRelativa(proj.minimo.data, h) + ')' },
         { rotulo: 'Entradas previstas', valor: fmtMoeda(totE), tom: 'pos', delta: 'até ' + fmtData(addDays(h, dias)).slice(0, 5) },
-        { rotulo: 'Saídas previstas', valor: fmtMoeda(totS), tom: 'neg', delta: 'até ' + fmtData(addDays(h, dias)).slice(0, 5) }
+        { rotulo: 'Saídas previstas', valor: fmtMoeda(totS), tom: 'neg', delta: 'do caixa até ' + fmtData(addDays(h, dias)).slice(0, 5) + ', faturas incluídas' }
       ]));
       var neg = proj.alertas.filter(function (a) { return a.tipo === 'negativo'; })[0];
       var baixo = proj.alertas.filter(function (a) { return a.tipo === 'baixo'; })[0];
@@ -4109,21 +4463,23 @@ var Telas = typeof Telas !== 'undefined' ? Telas : {};
       var atrasado = p.data < h, naFatura = Motor.dentroDaFatura(vS, p);
       var sub = [fmtDataRelativa(p.data, h) + ' · ' + fmtData(p.data).slice(0, 5), conta(p.conta_id) ? conta(p.conta_id).nome : null, p.categoria_codigo ? nomeCategoria(p.categoria_codigo) : null].filter(Boolean).join(' · ');
       return UI.item({
-        icone: p.origem === 'fatura' || naFatura ? 'cartao' : (p.tipo === 'entrada' ? 'mais-acao' : 'vencimentos'),
-        tom: atrasado && !naFatura ? 'danger' : '', titulo: p.descricao, sub: sub + (naFatura ? ' · já entra na fatura, não soma na projeção' : (p._virtual ? ' · sugerido, ainda não gravado' : '')),
+        icone: p.origem === 'fatura' || p.origem === 'fatura_estimada' || naFatura ? 'cartao' : (p.tipo === 'entrada' ? 'mais-acao' : 'vencimentos'),
+        tom: atrasado && !naFatura ? 'danger' : '', titulo: p.descricao, sub: sub + (naFatura ? ' · no cartão: entra na fatura, não sai do caixa' : rotuloVirtual(p)),
         valor: sinalValor(p), tomValor: p.tipo === 'entrada' ? 'pos' : (naFatura ? 'muted' : ''), onclick: function () { editarPrevisto(p); },
-        direita: naFatura ? UI.pilula('na fatura', 'info') : (atrasado ? UI.pilula('atrasado', 'danger') : (p._ajustado ? UI.pilula('ajustado', 'info') : null))
+        direita: naFatura ? UI.pilula('na fatura', 'info') : (atrasado ? UI.pilula('atrasado', 'danger') : (p._ajustado ? UI.pilula('ajustado', 'info') : (p._estimada ? UI.pilula('estimada', 'info') : null)))
       });
     }));
 
     root.appendChild(UI.cartao({
       titulo: 'Previstos até ' + fmtData(addDays(h, dias)).slice(0, 5),
-      corpo: [corpoLista, nVirtuais ? UI.aviso({ tom: 'info', texto: nVirtuais + ' ' + (nVirtuais === 1 ? 'previsto vem' : 'previstos vêm') + ' das suas fixas e parcelas e ainda não ' + (nVirtuais === 1 ? 'está' : 'estão') + ' na planilha. Eles já entram na projeção. Toque em um para ajustar ou use Gerar previstos.' }) : null],
+      corpo: [corpoLista, nVirtuais ? UI.aviso({ tom: 'info', texto: nVirtuais + ' ' + (nVirtuais === 1 ? 'previsto vem' : 'previstos vêm') + ' das fixas, das faturas estimadas dos cartões e das saídas que se repetem no seu extrato. Ainda não ' + (nVirtuais === 1 ? 'está' : 'estão') + ' na planilha, mas já ' + (nVirtuais === 1 ? 'entra' : 'entram') + ' na projeção. Toque em um para ajustar.' }) : null],
       acoes: [
         UI.botao('Previsto', { icone: 'mais-acao', onclick: novoPrevisto, title: 'Adicionar previsto' }),
         UI.botao('Gerar previstos das fixas', { onclick: function () { gerarDasFixas(dias); } })
       ]
     }));
+
+    root.appendChild(cartaoComprometido(h));
 
     /* plano com o Claude */
     root.appendChild(UI.cartao({
@@ -4155,16 +4511,15 @@ var Telas = typeof Telas !== 'undefined' ? Telas : {};
 
   /* S com os previstos que as fixas e parcelas ainda vão gerar (copias marcadas como virtuais) */
   function visao(h) {
-    var gerados = Motor.gerarPrevistos(S, addDays(h, GERAR_ATE), h).map(function (p) { p._virtual = true; return p; });
     var v = Object.assign({}, S);
-    v.previstos = S.previstos.concat(gerados);
+    v.previstos = Motor.previstosCompletos(S, addDays(h, GERAR_ATE), h);
     return v;
   }
 
   function naturezaDe(p) {
     var cat = categoria(p.categoria_codigo);
     var nat = cat && cat.natureza_padrao;
-    if (p.origem === 'fatura' || p.categoria_codigo === '6.01') return 'Fatura';
+    if (p.origem === 'fatura' || p.origem === 'fatura_estimada' || p.categoria_codigo === '6.01') return 'Fatura';
     if (nat === 'Receita' || nat === 'Despesa' || nat === 'Investimento' || nat === 'Fatura' || nat === 'Transferência própria' || nat === 'Estorno') {
       if (!(nat === 'Despesa' && p.tipo === 'entrada') && !(nat === 'Receita' && p.tipo === 'saida')) return nat;
     }
@@ -4287,16 +4642,16 @@ var Telas = typeof Telas !== 'undefined' ? Telas : {};
     var ct = conta(p.conta_id);
     var naFatura = tom === 'info';
     var sub = [fmtDataRelativa(p.data, h) + ' · ' + fmtData(p.data).slice(0, 5), ct ? ct.nome : null, p.categoria_codigo ? nomeCategoria(p.categoria_codigo) : null].filter(Boolean).join(' · ');
-    var ehFatura = p.origem === 'fatura' || p.categoria_codigo === '6.01';
+    var ehFatura = p.origem === 'fatura' || p.origem === 'fatura_estimada' || p.categoria_codigo === '6.01';
     var topo = UI.el('div', { class: 'vc-topo' },
       UI.el('span', { class: 'ic ' + (tom || '') }, UI.icone(ehFatura || naFatura ? 'cartao' : (receber ? 'mais-acao' : 'vencimentos'))),
       UI.el('div', { class: 'vc-tx' },
         UI.el('b', { text: p.descricao, title: p.descricao }),
-        UI.el('small', { text: sub + (p._virtual ? (naFatura ? ' · vem de uma compra parcelada' : ' · vem de uma fixa') : '') })),
+        UI.el('small', { text: sub + (p._estimada ? ' · estimada pelas compras no cartão' : (p._recorrente ? ' · repete todo mês no extrato' : (p._virtual ? (naFatura ? ' · vem de uma compra parcelada ou fixa no cartão' : ' · vem de uma fixa') : ''))) })),
       UI.el('div', { class: 'vc-val num ' + (receber ? 'pos' : (naFatura ? 'muted' : '')), text: (receber ? '+ ' : '') + fmtMoeda(p.valor) }));
     var marcas = [];
     if (receber) marcas.push(UI.pilula('a receber', 'pos'));
-    if (ehFatura) marcas.push(UI.pilula('fatura do cartão', 'info'));
+    if (ehFatura) marcas.push(UI.pilula(p._estimada ? 'fatura estimada' : 'fatura do cartão', 'info'));
     if (naFatura) marcas.push(UI.pilula('já entra na fatura', 'info'));
     if (par) marcas.push(UI.pilula('parece já pago', 'warn'));
     var item = UI.el('div', { class: 'vc-item ' + (tom || '') }, topo, marcas.length ? UI.el('div', { class: 'vc-marcas' }, marcas) : null);
@@ -4412,7 +4767,7 @@ var Telas = typeof Telas !== 'undefined' ? Telas : {};
       grupo('Hoje', 'warn', gHoje, h, pares, totalSaidas(gHoje)),
       grupo('Próximos ' + avisoDias + ' dias', 'warn', gProx, h, pares, totalSaidas(gProx)),
       grupo(diaSel ? 'Neste dia' : 'Depois, até ' + fmtData(addDays(h, HORIZONTE)).slice(0, 5), '', gDepois, h, pares, totalSaidas(gDepois)),
-      grupo('Parcelas no cartão', 'info', gFatura, h, pares, totalSaidas(gFatura), 'Só para você saber: estas parcelas já estão dentro da fatura do cartão. Não entram no total a pagar e se pagam junto com a fatura.')
+      grupo('No cartão', 'info', gFatura, h, pares, totalSaidas(gFatura), 'Só para você saber: estas parcelas e contas estão no cartão, então entram na fatura. Não saem do caixa no dia e não somam no total a pagar. O que sai do caixa é a fatura.')
     ].forEach(function (g) { if (g) coluna.appendChild(g); });
     if (!diaSel && !visiveis.length && !gFatura.length) coluna.appendChild(UI.vazio({ icone: 'vencimentos', titulo: 'Nada vence nos próximos ' + HORIZONTE + ' dias', texto: 'Há vencimentos mais para frente. Use o calendário ou a Projeção.' }));
 
@@ -5023,6 +5378,7 @@ var Telas = typeof Telas !== 'undefined' ? Telas : {};
         sel('carteira_padrao', 'Carteira padrão', 'PF', [{ valor: 'PF', texto: 'Pessoal' }, { valor: 'PJ', texto: 'Empresa' }], 'Usada em novos lançamentos.'),
         sel('dias_projecao', 'Dias de projeção', '30', nums([15, 30, 60, 90], ' dias'), 'Até onde a projeção olha.'),
         sel('aviso_dias', 'Avisar vencimentos com', '3', nums([1, 2, 3, 5, 7], ' dias de antecedência')),
+        sel('prever_recorrentes', 'Prever saídas que se repetem', 'sim', [{ valor: 'sim', texto: 'Sim, pelo extrato' }, { valor: 'nao', texto: 'Não, só as fixas' }], 'Boletos e Pix que aparecem todo mês entram sozinhos na projeção.'),
         sel('sync_dias', 'Buscar no banco os últimos', '7', nums([3, 7, 15, 30], ' dias'), 'Janela de cada atualização.'),
         sel('meses_primeira_carga', 'Meses na primeira carga', '3', nums([1, 2, 3, 4, 5, 6], ' meses')),
         UI.campo({ rotulo: 'Aparência', tipo: 'select', id: 'cf-tema', valor: String(cfg('tema', ls('appfin.tema') || 'auto')), opcoes: [{ valor: 'auto', texto: 'Automática (segue o aparelho)' }, { valor: 'claro', texto: 'Clara' }, { valor: 'escuro', texto: 'Escura' }], onchange: function (v) { ls('appfin.tema', v); aplicarTema(v); salvarPref('tema', v); } }),

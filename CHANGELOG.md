@@ -1,5 +1,14 @@
 # Mudanças
 
+## 1.1.2 (2026-10-28)
+
+- Projeção pelo caixa: só entra o que sai das contas de dinheiro. Compra, parcela ou conta fixa no cartão não sai do caixa no dia; o que sai é a fatura, no vencimento.
+- Faturas estimadas: enquanto o banco não fecha a fatura, o app calcula pelas compras e parcelas que o cartão já mostrou, menos o que você pagou adiantado, e lança no dia do vencimento. Quando a fatura real chega, ela toma o lugar da estimada.
+- Saídas que se repetem: boletos, Pix e parcelas que aparecem todo mês no extrato entram sozinhos na projeção e nos vencimentos. Dá para desligar em Configurações.
+- Dinheiro comprometido: área nova na Projeção com o usado nos cartões, as próximas faturas, as compras parceladas, empréstimos e financiamentos, e quanto já está prometido em cada um dos próximos seis meses. Na Visão geral, um quadro com o total.
+- A Visão geral e o Claude passam a ver as mesmas saídas previstas que a tela de Projeção.
+- Corrigido defeito grave: ao gravar vários lançamentos de uma vez, o app guardava o número da linha errado, e a classificação do Claude podia ser gravada por cima de outro lançamento. Na próxima atualização com o banco, o app apaga as linhas repetidas e busca de novo os lançamentos que tinham sido sobrescritos.
+
 ## 1.1.1 (2026-10-28)
 
 - Saldo corrigido: empréstimos do banco (como capital de giro) eram somados como dinheiro. Agora viram o tipo Empréstimo e aparecem como dívida, fora do saldo.
