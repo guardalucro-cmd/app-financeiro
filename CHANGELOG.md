@@ -1,5 +1,9 @@
 # Mudanças
 
+## 1.1.4 (2026-10-28)
+
+- Lançamentos repetidos somem na hora: ao abrir, o app mostra só uma cópia de cada lançamento e apaga as outras da planilha, sem esperar a atualização com o banco. A próxima atualização com o banco busca de novo os últimos meses para recuperar o que o defeito antigo tinha apagado.
+
 ## 1.1.3 (2026-10-28)
 
 - Cores dos valores em todas as telas: saída sempre em vermelho, entrada em verde, saldo e resultado em verde quando positivos, vermelho quando negativos e amarelo quando zerados.
