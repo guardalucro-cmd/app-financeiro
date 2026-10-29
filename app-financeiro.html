@@ -532,7 +532,7 @@ body.ag-ativa #fab{display:none}
 <script>
 /* === 50-core.js === */
 /* ===== 50-core.js: estado global e utilidades puras (sem DOM) ===== */
-var APP_VERSAO = '1.2.0';
+var APP_VERSAO = '1.2.1';
 var S = {
   tela: 'visao', planilhaId: '', carregado: false, exemplo: false, erro: null, ultimaCarga: 0, pausaAte: 0,
   lancamentos: [], contas: [], plano: [], orcamento: [], previstos: [], fixas: [], regras: [], config: [], controle: [],
@@ -3322,12 +3322,27 @@ var Telas = typeof Telas !== 'undefined' ? Telas : {};
   }
 
   /* ---------- dicas do agente (uma chamada por dia e carteira) ---------- */
+  /* dica lida some de vez: guarda no aparelho o título das dicas fechadas e a lista do dia */
+  function lerJSON(k, padrao) { try { var v = JSON.parse(ls(k) || 'null'); return v == null ? padrao : v; } catch (e) { return padrao; } }
+  function chaveDica(d) { return fold(d && d.titulo); }
+  function dicasLidas() { return lerJSON('appfin.dicas.lidas', []); }
+  function marcarLida(d) {
+    var lidas = dicasLidas(), k = chaveDica(d);
+    if (k && lidas.indexOf(k) < 0) lidas.push(k);
+    ls('appfin.dicas.lidas', JSON.stringify(lidas.slice(-300)));
+  }
   function pintarDicas(box, lista) {
     box.innerHTML = '';
     if (!lista || !lista.length) { box.appendChild(UI.el('p', { class: 'muted', text: 'O Claude não encontrou nada urgente agora.' })); return; }
+    var lidas = dicasLidas();
+    var novas = lista.filter(function (d) { return lidas.indexOf(chaveDica(d)) < 0; }).slice(0, 3);
+    if (!novas.length) { box.appendChild(UI.el('p', { class: 'muted', text: 'Você já leu as dicas de hoje. Amanhã o Claude traz outras.' })); return; }
     var mapa = { alerta: 'danger', atencao: 'warn', ok: 'pos' };
-    lista.slice(0, 3).forEach(function (d) {
-      box.appendChild(UI.aviso({ tom: mapa[d.tom] || 'warn', titulo: ocultarTexto(semTravessao(d.titulo)) + '.', texto: ocultarTexto(semTravessao(d.texto)) }));
+    novas.forEach(function (d) {
+      box.appendChild(UI.aviso({
+        tom: mapa[d.tom] || 'warn', titulo: ocultarTexto(semTravessao(d.titulo)) + '.', texto: ocultarTexto(semTravessao(d.texto)),
+        acoes: [UI.botao('Já li', { tom: 'fantasma', pequeno: true, onclick: function () { marcarLida(d); pintarDicas(box, lista); } })]
+      }));
     });
   }
   function cartaoDicas() {
@@ -3339,6 +3354,10 @@ var Telas = typeof Telas !== 'undefined' ? Telas : {};
     }
     var chave = hoje() + '|' + S.filtros.carteira + '|' + (S.filtros.conta || '');
     var c = S._dicasCache;
+    if (!c || c.chave !== chave) {
+      var salvo = lerJSON('appfin.dicas.dia', null);
+      if (salvo && salvo.chave === chave && Array.isArray(salvo.lista)) c = S._dicasCache = { chave: chave, lista: salvo.lista, alvos: [] };
+    }
     if (c && c.chave === chave) {
       if (c.lista) pintarDicas(box, c.lista);
       else { box.appendChild(UI.el('p', { class: 'muted', text: 'O Claude está lendo os seus números...' })); c.alvos.push(box); }
@@ -3347,6 +3366,7 @@ var Telas = typeof Telas !== 'undefined' ? Telas : {};
       box.appendChild(UI.el('p', { class: 'muted', text: 'O Claude está lendo os seus números...' }));
       Promise.resolve().then(function () { return Agente.dicas(S); }).then(function (lista) {
         c.lista = Array.isArray(lista) ? lista : [];
+        ls('appfin.dicas.dia', JSON.stringify({ chave: chave, lista: c.lista }));
         c.alvos.forEach(function (a) { if (document.body.contains(a)) pintarDicas(a, c.lista); });
         c.alvos = [];
       }).catch(function (e) {
@@ -3631,7 +3651,7 @@ var Telas = typeof Telas !== 'undefined' ? Telas : {};
     acoes.push(UI.botao('Marcar como revisado', { pequeno: true, icone: 'ok', disabled: rodando, onclick: function () { marcarRevisados(pend); } }));
     alvo.appendChild(UI.aviso({
       tom: 'warn', titulo: pend.length + (pend.length === 1 ? ' lançamento' : ' lançamentos') + ' a classificar.',
-      texto: pend.length > LIMITE_LOTE ? 'O Claude classifica ' + LIMITE_LOTE + ' por vez.' : 'Confira e marque como revisado quando estiver certo.',
+      texto: pend.length > LIMITE_LOTE ? 'O Claude classifica ' + LIMITE_LOTE + ' por vez.' : 'O Claude escolhe a categoria e tira da fila. Se a categoria já estiver certa, marque como revisado.',
       acoes: acoes
     }));
   }
@@ -3650,15 +3670,17 @@ var Telas = typeof Telas !== 'undefined' ? Telas : {};
     var porRegra = [], antesRegra = [], restante = [];
     fatia.forEach(function (l) {
       var r = typeof Classificar !== 'undefined' && Classificar.regraPara ? Classificar.regraPara(l.descricao, S.regras) : null;
-      if (r && r.categoria_codigo !== '9' && r.categoria_codigo !== (l.categoria_codigo || '9')) {
-        antesRegra.push({ categoria_codigo: l.categoria_codigo, natureza: l.natureza, atualizado_em: l.atualizado_em });
-        l.categoria_codigo = r.categoria_codigo; l.natureza = r.natureza || naturezaDaCategoria(r.categoria_codigo, l.tipo, l.natureza);
+      if (r && r.categoria_codigo !== '9') {
+        antesRegra.push({ categoria_codigo: l.categoria_codigo, natureza: l.natureza, revisado: l.revisado, atualizado_em: l.atualizado_em });
+        if (r.categoria_codigo !== (l.categoria_codigo || '9')) { l.categoria_codigo = r.categoria_codigo; l.natureza = r.natureza || naturezaDaCategoria(r.categoria_codigo, l.tipo, l.natureza); }
+        l.revisado = 'sim';
         porRegra.push(l);
       } else restante.push(l);
     });
     if (porRegra.length) gravarLote(porRegra, antesRegra, porRegra.length + (porRegra.length === 1 ? ' lançamento resolvido' : ' lançamentos resolvidos') + ' pelas suas regras.', 'Não gravou as categorias das regras');
     if (!restante.length) { desenharLista(); return; }
-    /* 2. o resto vai para o Claude, que recebe as correções já confirmadas como exemplo */
+    /* 2. o resto vai para o Claude, que recebe as correções já confirmadas como exemplo.
+       O que ele classifica sai da fila; o que ele não sabe ("9") continua a classificar. */
     var itens = restante.map(function (l) { return { id: l.id, descricao: l.descricao, valor: l.valor, tipo: l.tipo }; });
     rodando = true; desenharLista();
     UI.toast('Pedindo ao Claude para classificar ' + itens.length + '...');
@@ -3668,14 +3690,16 @@ var Telas = typeof Telas !== 'undefined' ? Telas : {};
       var alterados = [], antes = [];
       restante.forEach(function (l) {
         var r = porId[l.id];
-        if (!r || !r.categoria_codigo || r.categoria_codigo === '9' || r.categoria_codigo === l.categoria_codigo) return;
-        antes.push({ categoria_codigo: l.categoria_codigo, natureza: l.natureza, atualizado_em: l.atualizado_em });
-        l.categoria_codigo = r.categoria_codigo; l.natureza = naturezaDaCategoria(r.categoria_codigo, l.tipo, l.natureza);
+        if (!r || !r.categoria_codigo || r.categoria_codigo === '9') return;
+        antes.push({ categoria_codigo: l.categoria_codigo, natureza: l.natureza, revisado: l.revisado, atualizado_em: l.atualizado_em });
+        if (r.categoria_codigo !== l.categoria_codigo) { l.categoria_codigo = r.categoria_codigo; l.natureza = naturezaDaCategoria(r.categoria_codigo, l.tipo, l.natureza); }
+        l.revisado = 'sim';
         alterados.push(l);
       });
-      if (!alterados.length) { UI.toast('O Claude não conseguiu sugerir categorias novas.', 'warn'); desenharLista(); return; }
+      var sobrou = restante.length - alterados.length;
+      if (!alterados.length) { UI.toast('O Claude não soube classificar estes. Escolha a categoria tocando no lançamento.', 'warn'); desenharLista(); return; }
       desenharLista();
-      gravarLote(alterados, antes, alterados.length + ' categorias sugeridas. Confira e marque como revisado.', 'Não gravou as categorias');
+      gravarLote(alterados, antes, alterados.length + (alterados.length === 1 ? ' lançamento classificado' : ' lançamentos classificados') + ' pelo Claude.' + (sobrou ? ' ' + sobrou + (sobrou === 1 ? ' ficou' : ' ficaram') + ' para você escolher a categoria.' : '') + ' Se algum estiver errado, toque nele e corrija.', 'Não gravou as categorias');
     }).catch(function (e) {
       rodando = false; console.error('classificarLote', e); desenharLista();
       UI.toast('Não consegui classificar agora. Tente de novo em instantes.', 'danger');
@@ -3809,10 +3833,10 @@ var Telas = typeof Telas !== 'undefined' ? Telas : {};
   /* aprendizado: a regra nova corrige na hora os outros lançamentos ainda não revisados que batem com ela */
   function aplicarRegraNosPendentes(contem, cod, natureza, excetoId) {
     var chave = fold(contem);
-    var alvo = S.lancamentos.filter(function (l) { return l.id !== excetoId && l.revisado !== 'sim' && (l.categoria_codigo || '9') !== cod && fold(l.descricao).indexOf(chave) >= 0; });
+    var alvo = S.lancamentos.filter(function (l) { return l.id !== excetoId && l.revisado !== 'sim' && fold(l.descricao).indexOf(chave) >= 0; });
     if (!alvo.length) return;
-    var antes = alvo.map(function (l) { return { categoria_codigo: l.categoria_codigo, natureza: l.natureza, atualizado_em: l.atualizado_em }; });
-    alvo.forEach(function (l) { l.categoria_codigo = cod; l.natureza = natureza; });
+    var antes = alvo.map(function (l) { return { categoria_codigo: l.categoria_codigo, natureza: l.natureza, revisado: l.revisado, atualizado_em: l.atualizado_em }; });
+    alvo.forEach(function (l) { l.categoria_codigo = cod; l.natureza = natureza; l.revisado = 'sim'; });
     App.render();
     gravarLote(alvo, antes, 'A regra corrigiu ' + alvo.length + (alvo.length === 1 ? ' lançamento parecido' : ' lançamentos parecidos') + ' que ainda não tinha revisão.', 'Não gravou as correções da regra');
   }

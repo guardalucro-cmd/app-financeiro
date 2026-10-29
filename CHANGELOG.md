@@ -1,5 +1,10 @@
 # Mudanças
 
+## 1.2.1 (2026-10-29)
+
+- Classificar com o Claude agora tira da fila "a classificar" o que ele classificou, inclusive quando ele confirma a categoria que já estava. Só continua na fila o que ele não soube classificar. O mesmo vale para o que as suas regras resolvem.
+- Dicas do Claude ganharam o botão "Já li": a dica lida não aparece de novo. As dicas do dia ficam guardadas no aparelho, então reabrir o app não traz uma leva nova no mesmo dia.
+
 ## 1.2.0 (2026-10-29)
 
 - Botão de olho para ocultar valores: no celular fica no topo, ao lado de Atualizar; no computador, no rodapé do menu. Ligado, todo valor em reais vira bolinhas em todas as telas, nos gráficos, nas dicas e nas respostas do agente. A escolha fica guardada no aparelho. O agente continua recebendo os números reais para responder certo.
