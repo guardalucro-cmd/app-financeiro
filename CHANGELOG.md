@@ -1,5 +1,9 @@
 # Mudanças
 
+## 1.2.0 (2026-10-29)
+
+- Botão de olho para ocultar valores: no celular fica no topo, ao lado de Atualizar; no computador, no rodapé do menu. Ligado, todo valor em reais vira bolinhas em todas as telas, nos gráficos, nas dicas e nas respostas do agente. A escolha fica guardada no aparelho. O agente continua recebendo os números reais para responder certo.
+
 ## 1.1.5 (2026-10-28)
 
 - Prompt de instalação: a aba Resumo da planilha mostrava 0 em Entrou e Saiu. O mês agora fica numa célula própria (B2) e a soma funciona.

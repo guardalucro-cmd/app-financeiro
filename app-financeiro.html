@@ -516,11 +516,12 @@ body.ag-ativa #fab{display:none}
     <nav id="nav-lado" aria-label="Menu"></nav>
     <div class="rodape">
       <div class="sync"><button type="button" id="btn-sync-lado"></button><span id="sync-info-lado"></span></div>
+      <div class="sync"><button type="button" id="btn-olho-lado"></button></div>
       <span id="planilha-info"></span>
     </div>
   </aside>
   <div id="conteudo">
-    <header id="topo"><span class="logo" id="logo-topo"></span><b id="titulo-topo">App Financeiro</b><button type="button" id="btn-sync-topo" aria-label="Atualizar com o banco"></button></header>
+    <header id="topo"><span class="logo" id="logo-topo"></span><b id="titulo-topo">App Financeiro</b><button type="button" id="btn-olho-topo"></button><button type="button" id="btn-sync-topo" aria-label="Atualizar com o banco"></button></header>
     <main id="tela" aria-live="polite"></main>
   </div>
 </div>
@@ -531,7 +532,7 @@ body.ag-ativa #fab{display:none}
 <script>
 /* === 50-core.js === */
 /* ===== 50-core.js: estado global e utilidades puras (sem DOM) ===== */
-var APP_VERSAO = '1.1.5';
+var APP_VERSAO = '1.2.0';
 var S = {
   tela: 'visao', planilhaId: '', carregado: false, exemplo: false, erro: null, ultimaCarga: 0, pausaAte: 0,
   lancamentos: [], contas: [], plano: [], orcamento: [], previstos: [], fixas: [], regras: [], config: [], controle: [],
@@ -583,8 +584,13 @@ function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function
 function $(id) { return document.getElementById(id); }
 function arred(n) { return Math.round((+n || 0) * 100) / 100; }
 function fmtNum(n, casas) { casas = casas == null ? 2 : casas; var v = +n || 0; var neg = v < 0; v = Math.abs(v); var s = v.toFixed(casas); var p = s.split('.'); p[0] = p[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.'); return (neg ? '-' : '') + p[0] + (casas ? ',' + p[1] : ''); }
-function fmtMoeda(n, semSimbolo) { var v = +n || 0; var s = fmtNum(Math.abs(v)); return (v < 0 ? '-' : '') + (semSimbolo ? '' : 'R$ ') + s; }
-function fmtMoedaCurta(n) { var v = Math.abs(+n || 0); var sinal = (+n || 0) < 0 ? '-' : ''; if (v >= 1000000) return sinal + 'R$ ' + fmtNum(v / 1000000, 1) + ' mi'; if (v >= 10000) return sinal + 'R$ ' + fmtNum(v / 1000, 1) + ' mil'; return sinal + 'R$ ' + fmtNum(v, v >= 1000 ? 0 : 2); }
+/* ocultar valores (1.2.0): o olho troca todo valor em reais por bolinhas; o agente sempre recebe os números reais (fmtMoedaReal) */
+var OCULTAR = false;
+var MASCARA = '•••••';
+function ocultarTexto(t) { t = String(t == null ? '' : t); return OCULTAR ? t.replace(/-?R\$\s?-?\d[\d.]*(,\d+)?(\s?(mil|mi)\b)?/g, 'R$ ' + MASCARA) : t; }
+function fmtMoeda(n, semSimbolo) { if (OCULTAR) return (semSimbolo ? '' : 'R$ ') + MASCARA; return fmtMoedaReal(n, semSimbolo); }
+function fmtMoedaReal(n, semSimbolo) { var v = +n || 0; var s = fmtNum(Math.abs(v)); return (v < 0 ? '-' : '') + (semSimbolo ? '' : 'R$ ') + s; }
+function fmtMoedaCurta(n) { if (OCULTAR) return 'R$ ' + MASCARA; var v = Math.abs(+n || 0); var sinal = (+n || 0) < 0 ? '-' : ''; if (v >= 1000000) return sinal + 'R$ ' + fmtNum(v / 1000000, 1) + ' mi'; if (v >= 10000) return sinal + 'R$ ' + fmtNum(v / 1000, 1) + ' mil'; return sinal + 'R$ ' + fmtNum(v, v >= 1000 ? 0 : 2); }
 function fmtData(iso) { var m = String(iso || '').match(/^(\d{4})-(\d{2})-(\d{2})/); return m ? m[3] + '/' + m[2] + '/' + m[1] : String(iso || ''); }
 function fmtDataCurta(iso) { var m = String(iso || '').match(/^(\d{4})-(\d{2})-(\d{2})/); return m ? m[3] + '/' + m[2] : String(iso || ''); }
 function fmtDataLonga(iso) { var d = parseYmd(iso); if (!d) return ''; return d.getDate() + ' ' + MESES_CURTO[d.getMonth()]; }
@@ -2269,6 +2275,7 @@ var ICONES = {
   mais: '<circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/>',
   sync: '<path d="M21 12a9 9 0 0 1-15.5 6.2L3 16"/><path d="M3 12a9 9 0 0 1 15.5-6.2L21 8"/><path d="M21 3v5h-5M3 21v-5h5"/>',
   'mais-acao': '<path d="M12 5v14M5 12h14"/>',
+  'olho-fechado': '<path d="M3 3l18 18"/><path d="M10.6 5.1A10 10 0 0 1 12 5c6.5 0 10 7 10 7a17 17 0 0 1-3.2 4.2M6.6 6.6A17 17 0 0 0 2 12s3.5 7 10 7a10 10 0 0 0 5.4-1.6"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/>',
   seta: '<path d="m9 6 6 6-6 6"/>', 'seta-esq': '<path d="m15 6-6 6 6 6"/>',
   fechar: '<path d="M6 6l12 12M18 6 6 18"/>', ok: '<path d="m5 12 5 5L20 7"/>',
   alerta: '<path d="M12 3 2 21h20z"/><path d="M12 10v5M12 18h.01"/>',
@@ -2455,7 +2462,7 @@ var UI = {
       var sc = UI.grafico._escala(Math.min.apply(null, todos.concat([0])), Math.max.apply(null, todos)); var n = Math.max.apply(null, o.series.map(function (s) { return s.pontos.length; })) || 1;
       var X = function (i) { return ml + (n === 1 ? w / 2 : i * w / (n - 1)); }, Y = function (v) { return mt + h - (v - sc.min) / (sc.max - sc.min) * h; };
       var partes = ['<g class="grade">'];
-      for (var v = sc.min; v <= sc.max + 1e-9; v += sc.passo) partes.push('<line x1="' + ml + '" x2="' + (W - mr) + '" y1="' + Y(v) + '" y2="' + Y(v) + '"/><text x="' + (ml - 6) + '" y="' + (Y(v) + 4) + '" text-anchor="end">' + esc(fmtMoedaCurta(v).replace('R$ ', '')) + '</text>');
+      for (var v = sc.min; v <= sc.max + 1e-9; v += sc.passo) partes.push('<line x1="' + ml + '" x2="' + (W - mr) + '" y1="' + Y(v) + '" y2="' + Y(v) + '"/>' + (OCULTAR ? '' : '<text x="' + (ml - 6) + '" y="' + (Y(v) + 4) + '" text-anchor="end">' + esc(fmtMoedaCurta(v).replace('R$ ', '')) + '</text>'));
       partes.push('</g>');
       if (sc.min < 0 && sc.max > 0) partes.push('<line class="eixo" x1="' + ml + '" x2="' + (W - mr) + '" y1="' + Y(0) + '" y2="' + Y(0) + '" stroke-dasharray="3 3"/>');
       if (o.linhaBase != null) partes.push('<line x1="' + ml + '" x2="' + (W - mr) + '" y1="' + Y(o.linhaBase) + '" y2="' + Y(o.linhaBase) + '" stroke="var(--warn)" stroke-dasharray="4 4"/>');
@@ -2496,7 +2503,7 @@ var UI = {
       for (var i = 0; i < n; i++) { var pos = 0, neg = 0; o.series.forEach(function (s) { var v = +s.valores[i] || 0; if (o.empilhado) { if (v >= 0) pos += v; else neg += v; } else { maxV = Math.max(maxV, v); minV = Math.min(minV, v); } }); maxV = Math.max(maxV, pos); minV = Math.min(minV, neg); }
       var sc = UI.grafico._escala(minV, maxV || 1); var Y = function (v) { return mt + h - (v - sc.min) / (sc.max - sc.min) * h; };
       var grupo = w / n, larg = o.empilhado ? grupo * 0.6 : grupo * 0.7 / o.series.length;
-      var partes = ['<g class="grade">']; for (var v = sc.min; v <= sc.max + 1e-9; v += sc.passo) partes.push('<line x1="' + ml + '" x2="' + (W - mr) + '" y1="' + Y(v) + '" y2="' + Y(v) + '"/><text x="' + (ml - 6) + '" y="' + (Y(v) + 4) + '" text-anchor="end">' + esc(fmtMoedaCurta(v).replace('R$ ', '')) + '</text>'); partes.push('</g>');
+      var partes = ['<g class="grade">']; for (var v = sc.min; v <= sc.max + 1e-9; v += sc.passo) partes.push('<line x1="' + ml + '" x2="' + (W - mr) + '" y1="' + Y(v) + '" y2="' + Y(v) + '"/>' + (OCULTAR ? '' : '<text x="' + (ml - 6) + '" y="' + (Y(v) + 4) + '" text-anchor="end">' + esc(fmtMoedaCurta(v).replace('R$ ', '')) + '</text>')); partes.push('</g>');
       var ptsDica = [];
       for (var c = 0; c < n; c++) { var acumP = 0, acumN = 0; o.series.forEach(function (s, si) { var v = +s.valores[c] || 0; var x = ml + c * grupo + (o.empilhado ? grupo * 0.2 : grupo * 0.15 + si * larg); var y0, y1; if (o.empilhado) { if (v >= 0) { y0 = Y(acumP + v); y1 = Y(acumP); acumP += v; } else { y0 = Y(acumN); y1 = Y(acumN + v); acumN += v; } } else { y0 = Y(Math.max(v, 0)); y1 = Y(Math.min(v, 0)); } partes.push('<rect x="' + x.toFixed(1) + '" y="' + y0.toFixed(1) + '" width="' + larg.toFixed(1) + '" height="' + Math.max(0.5, y1 - y0).toFixed(1) + '" rx="3" fill="var(--' + (s.tom || 'brand') + ')"/>'); ptsDica.push({ cx: x + larg / 2, cy: y0, rotulo: o.categorias[c], v: v, s: s }); }); }
       var passoR = Math.max(1, Math.ceil(n / 7)); o.categorias.forEach(function (r, i) { if (i % passoR === 0 || i === n - 1) partes.push('<text x="' + (ml + i * grupo + grupo / 2) + '" y="' + (H - 8) + '" text-anchor="middle">' + esc(r) + '</text>'); });
@@ -2704,12 +2711,12 @@ var Agente = {
     (saldos.porConta || []).slice(0, 12).forEach(function (pc) {
       var ct = pc.conta || {};
       var divida = ct.tipo === 'cartao' || ct.tipo === 'emprestimo';
-      ls.push((ct.nome || 'Conta') + ' (' + (ct.tipo || 'conta') + ', ' + (ct.carteira || '') + '): ' + (divida ? 'DÍVIDA de ' + fmtMoeda(Math.abs(pc.saldo)) + (ct.tipo === 'cartao' ? ' usada no cartão' : ' a pagar') : fmtMoeda(pc.saldo)) + (pc.saldo_em ? ' em ' + dm(pc.saldo_em) : ''));
+      ls.push((ct.nome || 'Conta') + ' (' + (ct.tipo || 'conta') + ', ' + (ct.carteira || '') + '): ' + (divida ? 'DÍVIDA de ' + fmtMoedaReal(Math.abs(pc.saldo)) + (ct.tipo === 'cartao' ? ' usada no cartão' : ' a pagar') : fmtMoedaReal(pc.saldo)) + (pc.saldo_em ? ' em ' + dm(pc.saldo_em) : ''));
     });
     if (!ls.length) ls.push('Nenhuma conta cadastrada.');
     var pcart = saldos.porCarteira || {};
-    ls.push('Dinheiro nas contas (sem cartões e empréstimos): ' + fmtMoeda(saldos.total) + '. PF: ' + fmtMoeda(pcart.PF) + '. PJ: ' + fmtMoeda(pcart.PJ) + '.');
-    if (saldos.dividas) ls.push('Dívidas (não são dinheiro): cartões ' + fmtMoeda(saldos.cartoes) + ', empréstimos ' + fmtMoeda(saldos.emprestimos) + '.');
+    ls.push('Dinheiro nas contas (sem cartões e empréstimos): ' + fmtMoedaReal(saldos.total) + '. PF: ' + fmtMoedaReal(pcart.PF) + '. PJ: ' + fmtMoedaReal(pcart.PJ) + '.');
+    if (saldos.dividas) ls.push('Dívidas (não são dinheiro): cartões ' + fmtMoedaReal(saldos.cartoes) + ', empréstimos ' + fmtMoedaReal(saldos.emprestimos) + '.');
     secao('SALDOS', ls, 0);
 
     // MÊS (fixa)
@@ -2717,9 +2724,9 @@ var Agente = {
     var ant = r.anterior || { entrou: 0, saiu: 0, sobrou: 0 };
     var mesAnt = addMeses(mes, -1);
     secao('MÊS DE ' + fmtMes(mes).toUpperCase(), [
-      'Entrou: ' + fmtMoeda(r.entrou) + '. Saiu: ' + fmtMoeda(r.saiu) + '. Sobrou: ' + fmtMoeda(r.sobrou) + '.',
-      'Investido: ' + fmtMoeda(r.investido) + '. Pago de faturas: ' + fmtMoeda(r.faturas) + '. Sem revisar no mês: ' + (r.semRevisar || 0) + '.',
-      'Mês anterior (' + fmtMes(mesAnt) + '): entrou ' + fmtMoeda(ant.entrou) + ', saiu ' + fmtMoeda(ant.saiu) + ', sobrou ' + fmtMoeda(ant.sobrou) + '.',
+      'Entrou: ' + fmtMoedaReal(r.entrou) + '. Saiu: ' + fmtMoedaReal(r.saiu) + '. Sobrou: ' + fmtMoedaReal(r.sobrou) + '.',
+      'Investido: ' + fmtMoedaReal(r.investido) + '. Pago de faturas: ' + fmtMoedaReal(r.faturas) + '. Sem revisar no mês: ' + (r.semRevisar || 0) + '.',
+      'Mês anterior (' + fmtMes(mesAnt) + '): entrou ' + fmtMoedaReal(ant.entrou) + ', saiu ' + fmtMoedaReal(ant.saiu) + ', sobrou ' + fmtMoedaReal(ant.sobrou) + '.',
       'Só Receita e Despesa contam em entrou e saiu. Fatura, transferência própria, investimento e estorno não são gasto.'
     ], 0);
 
@@ -2728,8 +2735,8 @@ var Agente = {
       var pg = Agente._tenta('podeGastarPorDia', [S, mes, hojeISO], null);
       if (pg) {
         secao('ATÉ O FIM DO MÊS', [
-          'Dias que faltam: ' + (pg.diasRestantes || 0) + '. Fixas que ainda vencem: ' + fmtMoeda(pg.fixasAindaVencem) + '. Receita prevista: ' + fmtMoeda(pg.receitaPrevista) + '.',
-          'Gasto até agora: ' + fmtMoeda(pg.gastoAteAgora) + '. Pode gastar por dia: ' + fmtMoeda(pg.valor) + '.'
+          'Dias que faltam: ' + (pg.diasRestantes || 0) + '. Fixas que ainda vencem: ' + fmtMoedaReal(pg.fixasAindaVencem) + '. Receita prevista: ' + fmtMoedaReal(pg.receitaPrevista) + '.',
+          'Gasto até agora: ' + fmtMoedaReal(pg.gastoAteAgora) + '. Pode gastar por dia: ' + fmtMoedaReal(pg.valor) + '.'
         ], 0);
       }
     } else {
@@ -2741,22 +2748,22 @@ var Agente = {
     var totalSaiu = +r.saiu || 0;
     secao('GASTOS POR CATEGORIA NO MÊS (maiores primeiro)', cats.slice(0, 10).map(function (x) {
       var parte = totalSaiu ? Math.round(((+x.realizado || 0) / totalSaiu) * 100) : 0;
-      return (x.nome || nomeCategoria(x.codigo)) + ' (' + (x.grupo || grupoDe(x.codigo)) + '): ' + fmtMoeda(x.realizado) + (totalSaiu ? ' (' + parte + '% do que saiu)' : '');
+      return (x.nome || nomeCategoria(x.codigo)) + ' (' + (x.grupo || grupoDe(x.codigo)) + '): ' + fmtMoedaReal(x.realizado) + (totalSaiu ? ' (' + parte + '% do que saiu)' : '');
     }), 3);
 
     // ORÇAMENTO VS REALIZADO (lista, top 8)
     var orc = Agente._tenta('orcamento', [S, mes], []);
     var orcLinhas = (Array.isArray(orc) ? orc : []).slice().sort(function (a, b) { return (+b.realizado || 0) - (+a.realizado || 0); }).slice(0, 8).map(function (o) {
-      return (o.nome || nomeCategoria(o.codigo)) + ': orçado ' + fmtMoeda(o.orcado) + ', realizado ' + fmtMoeda(o.realizado) + ' (' + (o.pct == null ? pct(o.realizado, o.orcado) : o.pct) + '%), ' + (o.situacao || '');
+      return (o.nome || nomeCategoria(o.codigo)) + ': orçado ' + fmtMoedaReal(o.orcado) + ', realizado ' + fmtMoedaReal(o.realizado) + ' (' + (o.pct == null ? pct(o.realizado, o.orcado) : o.pct) + '%), ' + (o.situacao || '');
     });
     secao('ORÇAMENTO VS REALIZADO', orcLinhas.length ? orcLinhas : ['Nenhum orçamento definido para ' + fmtMes(mes) + '.'], 2);
 
     // PROJEÇÃO (fixa)
     var pj = Agente._tenta('projecao', [S, { dias: dias, hojeISO: hojeISO, cenario: S.cenario }], null);
     if (pj) {
-      var al = (pj.alertas || []).slice(0, 5).map(function (a) { return (a.tipo === 'negativo' ? 'saldo negativo' : 'saldo baixo') + ' em ' + dm(a.data) + ' (' + fmtMoeda(a.saldo) + ')'; });
+      var al = (pj.alertas || []).slice(0, 5).map(function (a) { return (a.tipo === 'negativo' ? 'saldo negativo' : 'saldo baixo') + ' em ' + dm(a.data) + ' (' + fmtMoedaReal(a.saldo) + ')'; });
       secao('PROJEÇÃO DE ' + dias + ' DIAS', [
-        'Saldo hoje: ' + fmtMoeda(pj.saldoInicial) + '. Menor saldo: ' + fmtMoeda(pj.minimo && pj.minimo.saldo) + (pj.minimo && pj.minimo.data ? ' em ' + dm(pj.minimo.data) : '') + '. Saldo no fim: ' + fmtMoeda(pj.final) + '.',
+        'Saldo hoje: ' + fmtMoedaReal(pj.saldoInicial) + '. Menor saldo: ' + fmtMoedaReal(pj.minimo && pj.minimo.saldo) + (pj.minimo && pj.minimo.data ? ' em ' + dm(pj.minimo.data) : '') + '. Saldo no fim: ' + fmtMoedaReal(pj.final) + '.',
         'Alertas: ' + (al.length ? al.join('; ') : 'nenhum') + '.'
       ], 0);
     }
@@ -2764,7 +2771,7 @@ var Agente = {
     // PRÓXIMOS DIAS (lista, até 40)
     var ate = addDays(hojeISO, dias);
     var v = Agente._tenta('vencimentos', [S, { ate: ate, hojeISO: hojeISO }], { atrasados: [], hoje: [], proximos: [], aReceber: [], naFatura: [], totalAPagar: 0, totalAReceber: 0, totalNaFatura: 0 });
-    function linhaPrev(p, rotulo) { return dm(p.data) + ' | ' + String(p.descricao || '').slice(0, 40) + ' | ' + fmtMoeda(p.valor) + ' | ' + (p.tipo === 'entrada' ? 'entra' : 'sai') + ' | ' + nomeConta(p.conta_id) + (p._estimada ? ' | fatura estimada' : (p._recorrente ? ' | repete todo mês no extrato' : '')) + (rotulo ? ' | ' + rotulo : ''); }
+    function linhaPrev(p, rotulo) { return dm(p.data) + ' | ' + String(p.descricao || '').slice(0, 40) + ' | ' + fmtMoedaReal(p.valor) + ' | ' + (p.tipo === 'entrada' ? 'entra' : 'sai') + ' | ' + nomeConta(p.conta_id) + (p._estimada ? ' | fatura estimada' : (p._recorrente ? ' | repete todo mês no extrato' : '')) + (rotulo ? ' | ' + rotulo : ''); }
     var prevLinhas = []
       .concat((v.atrasados || []).map(function (p) { return linhaPrev(p, 'ATRASADO'); }))
       .concat((v.hoje || []).map(function (p) { return linhaPrev(p, 'HOJE'); }))
@@ -2772,7 +2779,7 @@ var Agente = {
       .concat((v.aReceber || []).map(function (p) { return linhaPrev(p, 'a receber'); }))
       .concat((v.naFatura || []).map(function (p) { return linhaPrev(p, 'no cartão, já dentro da fatura, não sai do caixa'); }))
       .slice(0, 40);
-    prevLinhas.unshift('A pagar até ' + dm(ate) + ': ' + fmtMoeda(v.totalAPagar) + ' (' + ((v.atrasados || []).length) + ' atrasados, ' + ((v.hoje || []).length) + ' hoje, ' + ((v.proximos || []).length) + ' próximos). A receber: ' + fmtMoeda(v.totalAReceber) + '.' + ((v.naFatura || []).length ? ' Parcelas no cartão já dentro da fatura (só informação): ' + fmtMoeda(v.totalNaFatura) + '.' : ''));
+    prevLinhas.unshift('A pagar até ' + dm(ate) + ': ' + fmtMoedaReal(v.totalAPagar) + ' (' + ((v.atrasados || []).length) + ' atrasados, ' + ((v.hoje || []).length) + ' hoje, ' + ((v.proximos || []).length) + ' próximos). A receber: ' + fmtMoedaReal(v.totalAReceber) + '.' + ((v.naFatura || []).length ? ' Parcelas no cartão já dentro da fatura (só informação): ' + fmtMoedaReal(v.totalNaFatura) + '.' : ''));
     if (prevLinhas.length === 1) prevLinhas.push('Nenhum previsto pendente no período.');
     secao('PRÓXIMOS ' + dias + ' DIAS (previstos pendentes)', prevLinhas, 1);
 
@@ -2780,36 +2787,36 @@ var Agente = {
     var parc = Agente._tenta('parcelasEmAberto', [S], []);
     var parcLinhas = (Array.isArray(parc) ? parc : []).slice(0, 10).map(function (p) {
       var l = p.lancamento || {};
-      return String(l.descricao || '').slice(0, 40) + ': ' + p.pagas + '/' + p.total + ' pagas, faltam ' + p.faltam + ' de ' + fmtMoeda(p.valor) + ' (compromisso ' + fmtMoeda(p.compromisso) + ')';
+      return String(l.descricao || '').slice(0, 40) + ': ' + p.pagas + '/' + p.total + ' pagas, faltam ' + p.faltam + ' de ' + fmtMoedaReal(p.valor) + ' (compromisso ' + fmtMoedaReal(p.compromisso) + ')';
     });
     if (parcLinhas.length) {
       var comp = (Array.isArray(parc) ? parc : []).reduce(function (t, p) { return t + (+p.compromisso || 0); }, 0);
-      parcLinhas.push('Compromisso total que ainda vem: ' + fmtMoeda(comp) + '.');
+      parcLinhas.push('Compromisso total que ainda vem: ' + fmtMoedaReal(comp) + '.');
     }
     secao('PARCELAS EM ABERTO', parcLinhas.length ? parcLinhas : ['Sem parcelas em aberto.'], 4);
 
     // DINHEIRO COMPROMETIDO (lista)
     var cp = Agente._tenta('comprometido', [S, hojeISO, 6], null);
     if (cp) {
-      var cpLinhas = ['Total comprometido: ' + fmtMoeda(cp.total) + ' (cartões usados ' + fmtMoeda(cp.totalCartoes) + ', empréstimos ' + fmtMoeda(cp.totalEmprestimos) + '; compras parceladas por vencer ' + fmtMoeda(cp.totalParcelado) + ', dentro dos cartões). Compra no cartão não sai do caixa no dia; sai a fatura no vencimento.'];
-      cp.cartoes.forEach(function (k) { cpLinhas.push(k.conta.nome + ': usado ' + fmtMoeda(k.usado) + '; faturas ' + k.faturas.slice(0, 4).map(function (f) { return dm(f.data) + ' ' + fmtMoeda(f.valor) + (f.estimada ? ' (estimada)' : ''); }).join(', ')); });
-      cp.emprestimos.forEach(function (e) { cpLinhas.push(e.conta.nome + ': saldo devedor ' + fmtMoeda(e.saldo)); });
-      cp.dividasMensais.forEach(function (d) { cpLinhas.push(String(d.descricao).slice(0, 40) + ': ' + fmtMoeda(d.porMes) + ' por mês (financiamento ou empréstimo visto no extrato)'); });
-      cpLinhas.push('Prometido por mês: ' + cp.porMes.map(function (m) { return fmtMes(m.mes).slice(0, 3) + ' ' + fmtMoeda(m.total); }).join(', ') + '.');
+      var cpLinhas = ['Total comprometido: ' + fmtMoedaReal(cp.total) + ' (cartões usados ' + fmtMoedaReal(cp.totalCartoes) + ', empréstimos ' + fmtMoedaReal(cp.totalEmprestimos) + '; compras parceladas por vencer ' + fmtMoedaReal(cp.totalParcelado) + ', dentro dos cartões). Compra no cartão não sai do caixa no dia; sai a fatura no vencimento.'];
+      cp.cartoes.forEach(function (k) { cpLinhas.push(k.conta.nome + ': usado ' + fmtMoedaReal(k.usado) + '; faturas ' + k.faturas.slice(0, 4).map(function (f) { return dm(f.data) + ' ' + fmtMoedaReal(f.valor) + (f.estimada ? ' (estimada)' : ''); }).join(', ')); });
+      cp.emprestimos.forEach(function (e) { cpLinhas.push(e.conta.nome + ': saldo devedor ' + fmtMoedaReal(e.saldo)); });
+      cp.dividasMensais.forEach(function (d) { cpLinhas.push(String(d.descricao).slice(0, 40) + ': ' + fmtMoedaReal(d.porMes) + ' por mês (financiamento ou empréstimo visto no extrato)'); });
+      cpLinhas.push('Prometido por mês: ' + cp.porMes.map(function (m) { return fmtMes(m.mes).slice(0, 3) + ' ' + fmtMoedaReal(m.total); }).join(', ') + '.');
       secao('DINHEIRO COMPROMETIDO', cpLinhas, 3);
     }
 
     // ASSINATURAS (lista)
     var ass = Agente._tenta('assinaturas', [S, mes], []);
     var assLinhas = (Array.isArray(ass) ? ass : []).slice(0, 10).map(function (a) {
-      return String(a.descricao || '').slice(0, 40) + ': ' + fmtMoeda(a.valor) + ' por mês, ' + ((a.meses || []).length) + ' meses seguidos' + (a.naFixas ? ', já está nas fixas' : ', NÃO está nas fixas');
+      return String(a.descricao || '').slice(0, 40) + ': ' + fmtMoedaReal(a.valor) + ' por mês, ' + ((a.meses || []).length) + ' meses seguidos' + (a.naFixas ? ', já está nas fixas' : ', NÃO está nas fixas');
     });
     secao('ASSINATURAS E GASTOS REPETIDOS', assLinhas.length ? assLinhas : ['Nenhum gasto repetido encontrado.'], 5);
 
     // ÚLTIMOS LANÇAMENTOS (lista, 15)
     var ult = ordenarPorData(filtrarCarteira(S.lancamentos).filter(ehTotal), true).slice(0, 15);
     secao('ÚLTIMOS 15 LANÇAMENTOS (receita e despesa)', ult.length ? ult.map(function (l) {
-      return dm(l.data) + ' | ' + String(l.descricao || '').slice(0, 40) + ' | ' + fmtMoeda(l.valor) + ' | ' + (l.tipo === 'entrada' ? 'entrou' : 'saiu') + ' | ' + nomeCategoria(l.categoria_codigo) + ' | ' + nomeConta(l.conta_id) + (l.parcela ? ' | parcela ' + l.parcela : '') + (l.observacao ? ' | comentário: ' + String(l.observacao).slice(0, 40) : '') + (l.revisado === 'nao' ? ' | sem revisar' : '');
+      return dm(l.data) + ' | ' + String(l.descricao || '').slice(0, 40) + ' | ' + fmtMoedaReal(l.valor) + ' | ' + (l.tipo === 'entrada' ? 'entrou' : 'saiu') + ' | ' + nomeCategoria(l.categoria_codigo) + ' | ' + nomeConta(l.conta_id) + (l.parcela ? ' | parcela ' + l.parcela : '') + (l.observacao ? ' | comentário: ' + String(l.observacao).slice(0, 40) : '') + (l.revisado === 'nao' ? ' | sem revisar' : '');
     }) : ['Nenhum lançamento.'], 6);
 
     // CONFIG (fixa)
@@ -3320,7 +3327,7 @@ var Telas = typeof Telas !== 'undefined' ? Telas : {};
     if (!lista || !lista.length) { box.appendChild(UI.el('p', { class: 'muted', text: 'O Claude não encontrou nada urgente agora.' })); return; }
     var mapa = { alerta: 'danger', atencao: 'warn', ok: 'pos' };
     lista.slice(0, 3).forEach(function (d) {
-      box.appendChild(UI.aviso({ tom: mapa[d.tom] || 'warn', titulo: semTravessao(d.titulo) + '.', texto: semTravessao(d.texto) }));
+      box.appendChild(UI.aviso({ tom: mapa[d.tom] || 'warn', titulo: ocultarTexto(semTravessao(d.titulo)) + '.', texto: ocultarTexto(semTravessao(d.texto)) }));
     });
   }
   function cartaoDicas() {
@@ -5518,7 +5525,7 @@ var Telas = typeof Telas !== 'undefined' ? Telas : {};
   }
 
   /* texto simples: parágrafos, quebras de linha e listas "- " viram <ul>; nada de innerHTML */
-  function limpar(t) { return String(t || '').replace(/\*\*(.+?)\*\*/g, '$1').replace(/^#{1,6}\s+/gm, '').replace(/`/g, ''); }
+  function limpar(t) { return ocultarTexto(String(t || '')).replace(/\*\*(.+?)\*\*/g, '$1').replace(/^#{1,6}\s+/gm, '').replace(/`/g, ''); }
   function pintarTexto(el, texto) {
     el.textContent = '';
     var linhas = limpar(texto).split(/\r?\n/); var ul = null, p = null;
@@ -5727,6 +5734,21 @@ var App = {
     var itens = ORDEM_MENU.filter(function (k) { return BARRA_MOBILE.indexOf(k) < 0 && Telas[k]; });
     UI.folha({ titulo: 'Mais', corpo: UI.el('div', { class: 'lista' }, itens.map(function (k) { var t = Telas[k]; return UI.item({ icone: t.icone || k, titulo: t.titulo, sub: t.descricao || '', onclick: function () { App.ir(k); } }); })) });
   },
+  /* 1.2.0: olho que esconde todos os valores; a escolha fica guardada neste aparelho */
+  renderOlho: function () {
+    ['btn-olho-lado', 'btn-olho-topo'].forEach(function (id) {
+      var b = $(id); if (!b) return; b.innerHTML = ''; b.appendChild(UI.icone(OCULTAR ? 'olho-fechado' : 'olho'));
+      var txt = OCULTAR ? 'Mostrar valores' : 'Ocultar valores';
+      if (id === 'btn-olho-lado') b.appendChild(document.createTextNode(txt));
+      b.setAttribute('aria-label', txt); b.setAttribute('aria-pressed', OCULTAR ? 'true' : 'false'); b.title = txt;
+    });
+  },
+  alternarOcultar: function () {
+    OCULTAR = !OCULTAR; ls('appfin.ocultar', OCULTAR ? 'sim' : null);
+    if (!$('folha').hidden) UI.fecharFolha();
+    App.renderOlho(); App.render();
+    UI.toast(OCULTAR ? 'Valores ocultos' : 'Valores à mostra');
+  },
   renderSync: function () {
     var info = $('sync-info-lado'); var bl = $('btn-sync-lado'), bt = $('btn-sync-topo');
     var ultima = ctl('ultima_sync', '');
@@ -5768,6 +5790,8 @@ var App = {
       $('fab').classList.toggle('escondido', y > ant && y > 40);
     }, true);
     var tamT; window.addEventListener('resize', function () { clearTimeout(tamT); tamT = setTimeout(function () { UI.caberNumeros($('tela')); }, 120); });
+    OCULTAR = ls('appfin.ocultar') === 'sim'; App.renderOlho();
+    $('btn-olho-lado').addEventListener('click', App.alternarOcultar); $('btn-olho-topo').addEventListener('click', App.alternarOcultar);
     $('btn-sync-lado').addEventListener('click', function () { App.sincronizar(); }); $('btn-sync-topo').addEventListener('click', function () { App.sincronizar(); });
     window.addEventListener('hashchange', function () { var h = location.hash.replace('#', ''); if (h && Telas[h] && h !== S.tela) App.ir(h); });
     document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape' && !$('folha').hidden) UI.fecharFolha(); });
